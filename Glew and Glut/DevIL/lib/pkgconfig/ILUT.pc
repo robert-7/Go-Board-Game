@@ -1,0 +1,10 @@
+prefix=/h/u6/t1/00/t1otoole/csc418/devil-1.7.8/usr/local
+exec_prefix=${prefix}
+
+Name: ILUT
+Description: Developer's Image Library - ILUT part (connection to higher level libraries)
+Version: 1.7.8
+URL: http://openil.sourceforge.net
+Libs: -L${exec_prefix}/lib -lILUT -ILU -lIL
+Libs.private: -lXrender -lXext -lX11 -L/usr/lib -lSDL -lGLU -lGL  -lm -lGL  -lm 
+Cflags: -I${prefix}/include  
