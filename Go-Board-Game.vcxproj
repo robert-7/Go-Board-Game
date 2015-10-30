@@ -79,7 +79,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Users\Robert\Code\GitHub\Go-Board-Game\Glew and Glut\freeglut\lib;C:\Users\Robert\Code\GitHub\Go-Board-Game\Glew and Glut\glew-1.11.0\lib;C:\Users\Robert\Code\GitHub\Go-Board-Game\Glew and Glut\DevIL\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>freeglut.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freeglut.lib;glew32.lib;DevIL.lib;ILU.lib;ILUT.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

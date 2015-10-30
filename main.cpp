@@ -8,6 +8,10 @@
 
 // NEW INCLUDES/USINGS
 
+//#pragma comment(lib, "DevIL.lib")
+//#pragma comment(lib, "ILU.lib")
+//#pragma comment(lib, "ILUT.lib")
+
 #include <iostream>
 using namespace std;
 
