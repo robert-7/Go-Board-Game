@@ -30,4 +30,5 @@ jobs:
       - name: Markdown Linting Action
         uses: avto-dev/markdown-lint@v1.4.0
         with:
+          config: markdown_config.yml
           args: './README.md'
