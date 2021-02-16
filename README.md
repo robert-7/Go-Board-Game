@@ -1,12 +1,14 @@
 # Go Project in C++
 
-My 4th year Computer Graphics course had a few assignments. The third assignment asked us to develop a game using the
-[OpenGL graphics library](https://www.opengl.org/) and [DevIL image library](http://openil.sourceforge.net/). The
-result was my group developed a Go board game.
+My 4th year Computer Graphics course had a few assignments. The third
+assignment asked us to develop a game using the [OpenGL graphics library](https://www.opengl.org/)
+and [DevIL image library](http://openil.sourceforge.net/). The result was my
+group developed a Go board game.
 
 ## Setup
 
-This project was last tested on Ubuntu. The instructions for setting up can be seen below:
+This project was last tested on Ubuntu. The instructions for setting up can be
+seen below:
 
 ### Setup on Windows Subsystem Linux 2 and Remote
 
@@ -22,7 +24,8 @@ With this done, you should be ready to set up the needed environment.
 # install dependencies
 sudo apt install apt-file
 sudo apt-file update
-sudo apt install mesa-common-dev libglu1-mesa-dev freeglut3-dev libdevil1c2 libdevil-dev
+sudo apt install mesa-common-dev libglu1-mesa-dev freeglut3-dev\ # OpenGL libs
+                 libdevil1c2 libdevil-dev                        # DevIL libs
 
 # clone the repository
 git clone https://github.com/robert-7/Go-Board-Game.git && cd Go-Board-Game
@@ -30,9 +33,9 @@ git clone https://github.com/robert-7/Go-Board-Game.git && cd Go-Board-Game
 
 ## Building and Running
 
-Building requires the OpenGL and DevIL libraries imported. `-lstdc++` was added to resolve
-[this issue](https://stackoverflow.com/questions/33263288/libstdc-dso-missing-from-command-line) and `-lm` was added
-to resolve [this issue](https://stackoverflow.com/questions/16006145/ld-undefined-reference-to-symbol-log2glibc-2-2-5).
+Building requires the OpenGL and DevIL libraries imported. `-lstdc++` was
+added to resolve [this issue](https://stackoverflow.com/questions/33263288/libstdc-dso-missing-from-command-line)
+and `-lm` was added to resolve [this issue](https://stackoverflow.com/questions/16006145/ld-undefined-reference-to-symbol-log2glibc-2-2-5).
 
 ```bash
 gcc -o main main.cpp -lGL -lGLU -lglut -lIL -lILU -lILUT -lstdc++ -lm
