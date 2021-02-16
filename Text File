@@ -1,9 +1,0 @@
-> ssh -X <username>@cdf.toronto.edu
-> wget http://www.cs.toronto.edu/~motoole/csc418/tutorial.2011w.05_2.zip
-> unzip tutorial.2011w.05_2.zip
-> cd tutorial.2011w.05_2/example2/
-> gcc -o main main.cpp -I../local/include -L../local/lib -lGL -lGLU -lglut -lIL -lILU -lILUT
-> setenv LD_LIBRARY_PATH "../local/lib/"
-> ./main 
-
-tcsh ; cd example2; gcc -o main main.cpp -I../local/include -L../local/lib -lGL -lGLU -lglut -lIL -lILU -lILUT; setenv LD_LIBRARY_PATH "../local/lib/";
