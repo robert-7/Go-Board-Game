@@ -47,8 +47,6 @@ GLuint texture[3] = { 0, 1, 2 };
 #define GL_CLAMP_TO_EDGE 0x812F
 typedef queue<int>  INTQUEUE;
 
-#define M_PI 3.1415926535897932384626433832795
-
 // Window settings
 int windowID;                // Glut window ID (for display)
 
@@ -659,7 +657,7 @@ void display()
 	glPushMatrix();
 	// Draw Beads
 
-	glBindTexture(GL_TEXTURE_2D, NULL);
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	glScalef(0.0525, 0.0525, 0.0525); // Just the right size :)
 	glTranslatef(0.0, 1.0, 0.0);      // The centre
