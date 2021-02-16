@@ -15,7 +15,11 @@
 #include <iostream>
 using namespace std;
 
-#include <windows.h>
+//For Sleep in Windows
+//#include <windows.h>
+//For Sleep in Linux
+#include <iostream>
+#include <unistd.h>
 
 // includes, graphics
 #include <GL/gl.h>
@@ -595,7 +599,11 @@ void DrawUnitCube(int color)
 
 	glEnd();
 
-	Sleep(3000);
+	// Windows
+	//Sleep(3000);
+	// Linux
+	usleep(3000);
+	
 }
 
 void display()
@@ -744,7 +752,7 @@ void SetImages()
 
 	///////////////////// LOAD WOODEN TEXTURE /////////////////////
 	ilBindImage(il[0]);
-	ilLoadImage("wooden.jpg");
+	ilLoadImage("images/wooden.jpg");
 	ilConvertImage(IL_RGB, IL_UNSIGNED_SHORT);
 
 	glBindTexture(GL_TEXTURE_2D, texture[0]);
@@ -765,7 +773,7 @@ void SetImages()
 
 	///////////////////// LOAD CHECKERBOARD TEXTURE /////////////////
 	ilBindImage(il[1]);
-	ilLoadImage("checkerboard.png");
+	ilLoadImage("images/checkerboard.png");
 	ilConvertImage(IL_RGB, IL_UNSIGNED_SHORT);
 
 	glBindTexture(GL_TEXTURE_2D, texture[1]);
