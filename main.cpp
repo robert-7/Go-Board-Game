@@ -990,6 +990,7 @@ void init()
 	glEnable(GL_CULL_FACE);  // enable backface culling
 	glEnable(GL_DEPTH_TEST); // enable depth testing
 							 //glEnable(GL_TEXTURE_2D); // enable textures
+	fart;
 
 	SetImages();
 
