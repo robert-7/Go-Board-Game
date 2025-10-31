@@ -1,6 +1,6 @@
 # Go Video Game Project in C++
 
-My 4th year Computer Graphics course had a few assignments. 
+My 4th year Computer Graphics course had a few assignments.
 The third assignment asked us to develop a game using the [OpenGL graphics library](https://www.opengl.org/) and [DevIL image library](http://openil.sourceforge.net/).
 The result was my group developed a 3D Go board game.
 To view a working product, feel free to check out this [YouTube video](https://www.youtube.com/shorts/47JSJlxC_so).
