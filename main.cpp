@@ -828,7 +828,6 @@ int check_liberties(int x, int y, int originx, int originy, int piece) {
 	if (liberties_status[x][y] != -1) {
 		return liberties_status[x][y];
 	}
-	int has_liberties = 0;
 	int direcx = x - originx;
 	int direcy = y - originy;
 	if ((direcx >= 0 && check_liberties(x + 1, y, originx, originy, piece)) ||
