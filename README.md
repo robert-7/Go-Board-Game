@@ -28,6 +28,7 @@ With the above done, you should be ready to set up the needed environment.
 # install dependencies
 sudo apt install mesa-common-dev libglu1-mesa-dev freeglut3-dev # OpenGL libs
 sudo apt install libdevil1c2 libdevil-dev                       # DevIL libs
+sudo apt install cmake clang-tidy cppcheck                      # Linters
 
 # clone the repository
 git clone https://github.com/robert-7/Go-Board-Game.git && cd Go-Board-Game
@@ -44,6 +45,18 @@ To clean up, run `make clean`.
 
 * `-lstdc++` was added to resolve [this issue](https://stackoverflow.com/questions/33263288/libstdc-dso-missing-from-command-line)
 * `-lm` was added to resolve [this issue](https://stackoverflow.com/questions/16006145/ld-undefined-reference-to-symbol-log2glibc-2-2-5).
+
+## Linting
+
+The repository uses the same commands locally and in CI. After installing the packages above, run:
+
+```shell
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+clang-tidy main.cpp -p build --warnings-as-errors='*'
+cppcheck --project=build/compile_commands.json --enable=warning,style,performance --error-exitcode=1
+```
+
+The `build` directory can be removed once you finish linting.
 
 ## In-Game Commands
 

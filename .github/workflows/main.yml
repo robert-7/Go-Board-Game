@@ -1,34 +1,53 @@
-# This is a basic workflow to help you get started with Actions
-name: markdown-lint
+name: linting
 
-# Controls when the action will run. 
+# Triggers the workflow on push or pull request events but only for the main branch
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "markdown-lint"
   markdown-lint:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-
-      # We usually want to check out the code as the first step in a Github Job
       - name: Check out code
         uses: actions/checkout@v2
 
-      # We run the Markdown Linting Action as seen here: https://github.com/marketplace/actions/markdown-linting-action
+      # We run the Markdown Linting Action as seen here:
+      # https://github.com/marketplace/actions/markdown-linting-action
       - name: Markdown Linting Action
         uses: avto-dev/markdown-lint@v1.5.0
         with:
           config: '.markdownlint.yaml'
           args: './README.md'
+
+  cpp-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang-tidy \
+            cppcheck \
+            freeglut3-dev \
+            libglew-dev \
+            libglu1-mesa-dev \
+            libgl1-mesa-dev \
+            libdevil-dev
+
+      - name: Configure with CMake
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: Run clang-tidy
+        run: clang-tidy main.cpp -p build --warnings-as-errors='*'
+
+      - name: Run cppcheck
+        run: cppcheck --project=build/compile_commands.json --enable=warning,style,performance --error-exitcode=1
