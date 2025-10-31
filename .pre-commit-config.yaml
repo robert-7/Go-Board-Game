@@ -1,0 +1,8 @@
+repos:
+  - repo: local
+    hooks:
+      - id: cxx-lint
+        name: Run clang-tidy and cppcheck
+        entry: scripts/run_lint.sh
+        language: script
+        pass_filenames: false

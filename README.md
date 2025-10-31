@@ -51,12 +51,22 @@ To clean up, run `make clean`.
 The repository uses the same commands locally and in CI. After installing the packages above, run:
 
 ```shell
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-clang-tidy main.cpp -p build --warnings-as-errors='*'
-cppcheck --project=build/compile_commands.json --enable=warning,style,performance --error-exitcode=1
+./scripts/run_lint.sh
 ```
 
-The `build` directory can be removed once you finish linting.
+The script configures CMake, runs clang-tidy, and then runs cppcheck with the same settings used in CI. It can be removed along with the `build` directory when you finish linting.
+
+To run linting automatically before each commit, install [`pre-commit`](https://pre-commit.com/) (e.g., `pip install pre-commit` or `sudo apt install pre-commit`), then enable the hooks once:
+
+```shell
+pre-commit install
+```
+
+You can trigger the hooks manually at any time with:
+
+```shell
+pre-commit run --all-files
+```
 
 ## In-Game Commands
 

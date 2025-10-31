@@ -846,7 +846,7 @@ void jump_off(int x0, int z0, int color) {
 	// For now, let's just assume they're all jumping to point (-4,0,-4)
 
 	int x1 = -4;            float xt = x0*(1 - t) + x1*t;
-	int y0 = 9;            float yt = -y0*pow(t, 2) + y0*t + y0;
+	int y0 = 9;             float yt = -y0*pow(t, 2) + y0*t + y0;
 	int z1 = -4;            float zt = z0*(1 - t) + z1*t;
 
 	glPushMatrix();

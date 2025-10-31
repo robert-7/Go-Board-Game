@@ -43,11 +43,5 @@ jobs:
             libgl1-mesa-dev \
             libdevil-dev
 
-      - name: Configure with CMake
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-
-      - name: Run clang-tidy
-        run: clang-tidy main.cpp -p build --warnings-as-errors='*'
-
-      - name: Run cppcheck
-        run: cppcheck --project=build/compile_commands.json --enable=warning,style,performance --error-exitcode=1
+      - name: Run lint script
+        run: ./scripts/run_lint.sh
