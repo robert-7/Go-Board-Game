@@ -36,16 +36,14 @@ git clone https://github.com/robert-7/Go-Board-Game.git && cd Go-Board-Game
 ### Building and Running
 
 Building requires the OpenGL and DevIL libraries imported.
+To build the binary, simply run `make`.
+To run the built binary, simply run `./main`.
+To clean up, run `make clean`.
+
+#### Building Gotchas
 
 * `-lstdc++` was added to resolve [this issue](https://stackoverflow.com/questions/33263288/libstdc-dso-missing-from-command-line)
 * `-lm` was added to resolve [this issue](https://stackoverflow.com/questions/16006145/ld-undefined-reference-to-symbol-log2glibc-2-2-5).
-
-The commands below should work build and run the game:
-
-```shell
-gcc -o main main.cpp -lGL -lGLU -lglut -lIL -lILU -lILUT -lstdc++ -lm
-./main
-```
 
 ## In-Game Commands
 
