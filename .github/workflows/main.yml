@@ -1,9 +1,7 @@
-# This is a basic workflow to help you get started with Actions
-name: markdown-lint
+name: linting
 
-# Controls when the action will run. 
+# Triggers the workflow on push or pull request events but only for the main branch
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
   push:
     branches: [ main ]
   pull_request:
@@ -12,19 +10,10 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a few jobs called "markdown-lint"
-
-  # The first job is called "markdown-lint"
   markdown-lint:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-
-      # We usually want to check out the code as the first step in a Github Job
       - name: Check out code
         uses: actions/checkout@v2
 
@@ -36,15 +25,9 @@ jobs:
           config: '.markdownlint.yaml'
           args: './README.md'
 
-  # The second job is called "cpp-lint"
   cpp-lint:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-
-      # We usually want to check out the code as the first step in a Github Job
       - name: Check out code
         uses: actions/checkout@v2
 
