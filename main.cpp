@@ -40,7 +40,6 @@ GLuint texture[3] = { 0, 1, 2 };
 #include <vector>
 
 #define GL_CLAMP_TO_EDGE 0x812F
-typedef std::queue<int>  INTQUEUE;
 
 // Window settings
 int windowID;                // Glut window ID (for display)
@@ -92,7 +91,7 @@ float inc = 0.002; // Depicts how fast time increments.
 int board_status[19][19];
 int liberties_status[19][19];
 int restart_option = 0;
-INTQUEUE rm_queue;
+std::queue<int> rm_queue;
 std::list<std::vector<int>> L;
 
 //float rm_array[1083];     // Holds the objects that will be removed.
