@@ -4,6 +4,7 @@
 //#include <GL\freeglut.h>
 // Standard library
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <iostream>
 
@@ -55,6 +56,8 @@ int  lastX = 0;
 int  lastY = 0;
 const float ZOOM_SCALE = 0.01;
 
+constexpr int BOARD_SIZE = 19;
+
 GLdouble camXPos = 0.0;
 GLdouble camYPos = 0.0;
 GLdouble camZPos = -1.5;
@@ -89,8 +92,8 @@ float t = 0;
 float inc = 0.002; // Depicts how fast time increments.
 
 				   // Behind the Scenes
-int board_status[19][19];
-int liberties_status[19][19];
+std::array<std::array<int, BOARD_SIZE>, BOARD_SIZE> board_status{};
+std::array<std::array<int, BOARD_SIZE>, BOARD_SIZE> liberties_status{};
 int restart_option = 0;
 std::queue<int> rm_queue;
 std::list<std::vector<int>> L;
@@ -796,11 +799,15 @@ void SetImages()
 ///////////////////////////////////////////////////////////////////////////////
 
 void init_board() {
-	std::fill(&board_status[0][0], &board_status[0][0] + 19 * 19, 0);
+	for (auto& column : board_status) {
+		column.fill(0);
+	}
 }
 
 void clear_liberties() {
-	std::fill(&liberties_status[0][0], &liberties_status[0][0] + 19 * 19, -1);
+	for (auto& column : liberties_status) {
+		column.fill(-1);
+	}
 }
 
 int check_liberties(int x, int y, int originx, int originy, int piece) {

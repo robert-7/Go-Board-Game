@@ -5,6 +5,7 @@
 # google-build-using-namespace : reject global using-namespace directives
 # modernize-deprecated-headers : prefer C++ standard headers over legacy C ones
 # modernize-loop-convert : prefer range-based for loops over traditional loops
+# modernize-use-stdarray : prefer 'std::array' over C-style arrays
 # modernize-use-using : prefer 'using' type alias declarations over 'typedef's
 Checks: >
   clang-diagnostic-*,
@@ -12,5 +13,6 @@ Checks: >
   google-build-using-namespace,
   modernize-deprecated-headers,
   modernize-loop-convert,
+  modernize-use-stdarray,
   modernize-use-using
 WarningsAsErrors: '*'
