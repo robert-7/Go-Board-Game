@@ -1,7 +1,12 @@
 # clang-tidy configuration for Go-Board-Game
 # Keep checks at tool defaults while treating all warnings as errors.
+# clang-diagnostic-* : surface compiler-style warnings (unused variables, conversions, etc.)
+# clang-analyzer-*   : enable static analysis passes for deeper bug finding
+# google-build-using-namespace : reject global using-namespace directives
+# modernize-deprecated-headers : prefer C++ standard headers over legacy C ones
 Checks: >
   clang-diagnostic-*,
   clang-analyzer-*,
-  google-build-using-namespace
+  google-build-using-namespace,
+  modernize-deprecated-headers
 WarningsAsErrors: '*'

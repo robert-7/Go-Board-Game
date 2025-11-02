@@ -2,14 +2,14 @@
 //#include <Windows.h>
 //#include <GL\glew.h>
 //#include <GL\freeglut.h>
-//#include <iostream>
+// Standard library
+#include <cmath>
+#include <iostream>
 
-//using namespace std;
-
-// NEW INCLUDES/USINGS
-
-//#pragma comment(lib, "DevIL.lib")
-//#pragma comment(lib, "ILU.lib")
+//For Sleep in Windows
+//#include <windows.h>
+//For Sleep in Linux
+#include <unistd.h>
 //#pragma comment(lib, "ILUT.lib")
 
 #include <iostream>
@@ -32,10 +32,6 @@
 
 ILuint il[3] = { 0, 1, 2 };
 GLuint texture[3] = { 0, 1, 2 };
-#include <math.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 
 // For the queue
@@ -62,6 +58,8 @@ const float ZOOM_SCALE = 0.01;
 GLdouble camXPos = 0.0;
 GLdouble camYPos = 0.0;
 GLdouble camZPos = -1.5;
+
+constexpr float PI = 3.14159265358979323846F; // Pi constant for trigonometric helpers
 
 const GLdouble CAMERA_FOVY = 60.0;
 const GLdouble NEAR_CLIP = 0.1;
@@ -627,7 +625,7 @@ void display()
 	glPushMatrix();
 
 	//////////////////// MOVING LIGHT!!!!! ////////////////////
-	glTranslatef(2 * sin(translatelight * 2 * 3.14 / 360), 0.0, 0.0);
+	glTranslatef(2.0F * std::sin(translatelight * 2.0F * PI / 360.0F), 0.0F, 0.0F);
 
 	if (lighting) {
 		lightingFunc();
@@ -706,7 +704,7 @@ void ApplyTransformations(float indx, float indy, float z)
 	int i;
 	if (indx < 0)
 	{
-		for (i = 0; i<abs(indx); i++)
+		for (i = 0; i < std::abs(indx); i++)
 		{
 			glTranslatef(-2.0, 0.0, 0.0);
 		}
@@ -720,7 +718,7 @@ void ApplyTransformations(float indx, float indy, float z)
 	}
 	if (indy < 0)
 	{
-		for (i = 0; i<abs(indy); i++)
+		for (i = 0; i < std::abs(indy); i++)
 		{
 			glTranslatef(0.0, 0.0, 2.0);
 		}
@@ -845,7 +843,7 @@ void jump_off(int x0, int z0, int color) {
 	// For now, let's just assume they're all jumping to point (-4,0,-4)
 
 	int x1 = -4;            float xt = x0*(1 - t) + x1*t;
-	int y0 = 9;             float yt = -y0*pow(t, 2) + y0*t + y0;
+	int y0 = 9;             float yt = -y0 * std::pow(t, 2.0F) + y0 * t + y0;
 	int z1 = -4;            float zt = z0*(1 - t) + z1*t;
 
 	glPushMatrix();
@@ -854,7 +852,7 @@ void jump_off(int x0, int z0, int color) {
 
 	// Draw Thigh
 	glPushMatrix();
-	if (t < 0.1) { glRotatef(-80 + 80 * sinf(t * 10 * M_PI), 1.0, 0.0, 1.0); }
+	if (t < 0.1) { glRotatef(-80 + 80 * std::sin(t * 10.0F * PI), 1.0, 0.0, 1.0); }
 	else { glRotatef(-80, 1.0, 0.0, 1.0); }
 	glScalef(2.0 / 5.0, 1.0, 2.0 / 5.0);
 	glTranslatef(0.0, -1.0, 0.0);
@@ -865,7 +863,7 @@ void jump_off(int x0, int z0, int color) {
 	glPushMatrix();
 
 	glTranslatef(0, -0.8, 0);
-	if (t < 0.1) { glRotatef(90 - 90 * sinf(t * 10 * M_PI), 1.0, 0.0, 1.0); }
+	if (t < 0.1) { glRotatef(90 - 90 * std::sin(t * 10.0F * PI), 1.0, 0.0, 1.0); }
 	else { glRotatef(90, 1.0, 0.0, 1.0); }
 	glScalef(1.0 / 5.0, 1.0, 1.0 / 5.0);
 	glTranslatef(0, -1.0, 0);
@@ -875,7 +873,7 @@ void jump_off(int x0, int z0, int color) {
 	// Draw Ankle
 	glPushMatrix();
 	glTranslatef(0, -1.0, 0);
-	if (t < 0.1) { glRotatef(-100 + 100 * sinf(t * 10 * M_PI), 1.0, 0.0, 1.0); }
+	if (t < 0.1) { glRotatef(-100 + 100 * std::sin(t * 10.0F * PI), 1.0, 0.0, 1.0); }
 	else { glRotatef(-100, 1.0, 0.0, 1.0); }
 	glScalef(1.0 / 2.0, 2.0 / 3.0, 1.0 / 2.0);
 	glTranslatef(0, -1.0, 0);
