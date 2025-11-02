@@ -69,6 +69,18 @@ jobs:
         with:
           ruby-version: '3.3'
 
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang-tidy \
+            cppcheck \
+            freeglut3-dev \
+            libglew-dev \
+            libglu1-mesa-dev \
+            libgl1-mesa-dev \
+            libdevil-dev
+
       # Run only on the diff for PRs for speed
       - name: Run pre-commit on PR changes
         if: github.event_name == 'pull_request'
