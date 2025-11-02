@@ -4,11 +4,13 @@
 # clang-analyzer-*   : enable static analysis passes for deeper bug finding
 # google-build-using-namespace : reject global using-namespace directives
 # modernize-deprecated-headers : prefer C++ standard headers over legacy C ones
+# modernize-loop-convert : prefer range-based for loops over traditional loops
 # modernize-use-using : prefer 'using' type alias declarations over 'typedef's
 Checks: >
   clang-diagnostic-*,
   clang-analyzer-*,
   google-build-using-namespace,
   modernize-deprecated-headers,
+  modernize-loop-convert,
   modernize-use-using
 WarningsAsErrors: '*'

@@ -3,6 +3,7 @@
 //#include <GL\glew.h>
 //#include <GL\freeglut.h>
 // Standard library
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 
@@ -678,8 +679,8 @@ void display()
 	// THE REMOVAL OF PIECE PORTION
 	if (!L.empty()) {
 
-		for (std::list<std::vector<int>>::iterator i = L.begin(); i != L.end(); ++i) {
-			jump_off((*i)[0], (*i)[1], (*i)[2]);
+		for (const auto& piece : L) {
+			jump_off(piece[0], piece[1], piece[2]);
 		}
 		t += (inc*L.size());
 	}
@@ -795,20 +796,11 @@ void SetImages()
 ///////////////////////////////////////////////////////////////////////////////
 
 void init_board() {
-
-	for (int i = 0; i < 19; i++) {
-		for (int j = 0; j < 19; j++) {
-			board_status[i][j] = 0;
-		}
-	}
+	std::fill(&board_status[0][0], &board_status[0][0] + 19 * 19, 0);
 }
 
 void clear_liberties() {
-	for (int i = 0; i < 19; i++) {
-		for (int j = 0; j < 19; j++) {
-			liberties_status[i][j] = -1;
-		}
-	}
+	std::fill(&liberties_status[0][0], &liberties_status[0][0] + 19 * 19, -1);
 }
 
 int check_liberties(int x, int y, int originx, int originy, int piece) {
