@@ -12,12 +12,8 @@ on:
 
 jobs:
   pre-commit:
-    name: pre-commit (py ${{ matrix.python-version }})
+    name: pre-commit
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ['3.12', '3.13']
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,7 +23,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: '3.13'
 
       - name: Set up Ruby (for running markdown linting during pre-commit)
         uses: ruby/setup-ruby@v1
