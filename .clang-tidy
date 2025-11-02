@@ -1,3 +1,7 @@
 # clang-tidy configuration for Go-Board-Game
 # Keep checks at tool defaults while treating all warnings as errors.
+Checks: >
+  clang-diagnostic-*,
+  clang-analyzer-*,
+  google-build-using-namespace
 WarningsAsErrors: '*'

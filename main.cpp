@@ -13,7 +13,6 @@
 //#pragma comment(lib, "ILUT.lib")
 
 #include <iostream>
-using namespace std;
 
 //For Sleep in Windows
 //#include <windows.h>
@@ -45,7 +44,7 @@ GLuint texture[3] = { 0, 1, 2 };
 #include <vector>
 
 #define GL_CLAMP_TO_EDGE 0x812F
-typedef queue<int>  INTQUEUE;
+typedef std::queue<int>  INTQUEUE;
 
 // Window settings
 int windowID;                // Glut window ID (for display)
@@ -96,7 +95,7 @@ int board_status[19][19];
 int liberties_status[19][19];
 int restart_option = 0;
 INTQUEUE rm_queue;
-list< vector<int> > L;
+std::list<std::vector<int>> L;
 
 //float rm_array[1083];     // Holds the objects that will be removed.
 //int p = 0;                // Always points to the last index of rm_array.
@@ -259,14 +258,14 @@ void keyboard(unsigned char key, int x, int y)
 
 	case 'o':
 	case 'O':
-		cout << "PRESSED O\n";
+		std::cout << "PRESSED O\n";
 		pauseTeapot_y = !pauseTeapot_y;
 
 		break;
 
 	case 'p':
 	case 'P':
-		cout << "PRESSED P\n";
+		std::cout << "PRESSED P\n";
 		pauseTeapot_x = !pauseTeapot_x;
 
 		break;
@@ -296,11 +295,11 @@ void keyboard(unsigned char key, int x, int y)
 	case 13:
 		if (board_status[placex + 9][placey + 9] != 0)
 		{
-			cout << "YOU CAN'T PLACE A PIECE HERE BECAUSE THERE ALREADY IS A PIECE HERE!!!\n";
+			std::cout << "YOU CAN'T PLACE A PIECE HERE BECAUSE THERE ALREADY IS A PIECE HERE!!!\n";
 		}
 		else
 		{
-			cout << "ENTER KEY PRESSED!!!\n";
+			std::cout << "ENTER KEY PRESSED!!!\n";
 			make_move(placex + 9, placey + 9, col);
 			if (col == 1) { col = 2; }
 			else { col = 1; }
@@ -308,20 +307,20 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case 'r':
 	case 'R':
-		cout << "You pressed 'r', the restart button. Press 'y' to confirm restart. Press 'n' to cancel.\n";
+		std::cout << "You pressed 'r', the restart button. Press 'y' to confirm restart. Press 'n' to cancel.\n";
 		restart_option = 1;
 		break;
 	case 'n':
 	case 'N':
 		if (restart_option) {
-			cout << "You pressed 'n'. Restart option cancelled.\n";
+			std::cout << "You pressed 'n'. Restart option cancelled.\n";
 			restart_option = 0;
 		}
 		break;
 	case 'y':
 	case 'Y':
 		if (restart_option) {
-			cout << "You pressed 'y'. The game has been restarted.\n";
+			std::cout << "You pressed 'y'. The game has been restarted.\n";
 			init_board();
 			col = 1;
 		}
@@ -380,14 +379,14 @@ void printMatrix()
 
 	glGetFloatv(GL_MODELVIEW_MATRIX, matrixData);
 
-	cout << endl;
+	std::cout << std::endl;
 
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
-			cout << matrixData[i + 4 * j] << ", ";
+			std::cout << matrixData[i + 4 * j] << ", ";
 		}
 
-		cout << endl;
+		std::cout << std::endl;
 	}
 }
 
@@ -682,7 +681,7 @@ void display()
 	// THE REMOVAL OF PIECE PORTION
 	if (!L.empty()) {
 
-		for (list<vector<int> >::iterator i = L.begin(); i != L.end(); ++i) {
+		for (std::list<std::vector<int>>::iterator i = L.begin(); i != L.end(); ++i) {
 			jump_off((*i)[0], (*i)[1], (*i)[2]);
 		}
 		t += (inc*L.size());
@@ -890,13 +889,13 @@ void jump_off(int x0, int z0, int color) {
 void remove_block(int x, int y, int piece) {
 	if (board_status[x][y] == piece) {
 		board_status[x][y] = 0;
-		cout << "Jump from "; cout << x; cout << y; cout << '\n';
+		std::cout << "Jump from "; std::cout << x; std::cout << y; std::cout << '\n';
 
 		//     rm_queue.push(x);
 		//     rm_queue.push(y);
 		//     rm_queue.push(piece);
 
-		vector<int> rm_piece;
+		std::vector<int> rm_piece;
 		rm_piece.push_back(x);
 		rm_piece.push_back(y);
 		rm_piece.push_back(piece);
