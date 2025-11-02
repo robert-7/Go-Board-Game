@@ -1,4 +1,12 @@
 repos:
+  - repo: https://github.com/markdownlint/markdownlint
+    rev: v0.13.0
+    hooks:
+      - id: markdownlint
+        args: ['--style', '.markdownlint.rb']
+        # Ensure pre-commit uses the system Ruby (e.g., /usr/bin/ruby 3.2)
+        # instead of looking for a specific rubyX.Y binary like /usr/bin/ruby3.0
+        language_version: system
   - repo: local
     hooks:
       - id: cxx-lint

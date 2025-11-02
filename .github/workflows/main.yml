@@ -11,37 +11,38 @@ on:
   workflow_dispatch:
 
 jobs:
-  markdown-lint:
+  pre-commit:
+    name: pre-commit
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code
-        uses: actions/checkout@v2
-
-      # We run the Markdown Linting Action as seen here:
-      # https://github.com/marketplace/actions/markdown-linting-action
-      - name: Markdown Linting Action
-        uses: avto-dev/markdown-lint@v1.5.0
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          config: '.markdownlint.yaml'
-          args: './README.md'
+          fetch-depth: 0  # full history so diff refs are available
 
-  cpp-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Set up Ruby (for running markdown linting during pre-commit)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
 
       - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            clang-tidy \
-            cppcheck \
-            freeglut3-dev \
-            libglew-dev \
-            libglu1-mesa-dev \
-            libgl1-mesa-dev \
-            libdevil-dev
+        run: ./scripts/install_dependencies.sh
 
-      - name: Run lint script
-        run: ./scripts/run_lint.sh
+      # Run only on the diff for PRs for speed
+      - name: Run pre-commit on PR changes
+        if: github.event_name == 'pull_request'
+        uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --from-ref ${{ github.event.pull_request.base.sha }} --to-ref ${{ github.sha }}
+
+      # Run on all files when pushing to main
+      - name: Run pre-commit on all files (main)
+        if: github.event_name == 'push'
+        uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --all-files

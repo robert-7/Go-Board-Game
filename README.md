@@ -25,14 +25,14 @@ Moreover, to run the binary, you might need to perform addditional setup for a w
 With the above done, you should be ready to set up the needed environment.
 
 ```shell
-# install dependencies
-sudo apt install mesa-common-dev libglu1-mesa-dev freeglut3-dev # OpenGL libs
-sudo apt install libdevil1c2 libdevil-dev                       # DevIL libs
-sudo apt install cmake clang-tidy cppcheck                      # Linters
+# install dependencies (Ubuntu/Debian)
+./scripts/install_dependencies.sh
 
 # clone the repository
 git clone https://github.com/robert-7/Go-Board-Game.git && cd Go-Board-Game
 ```
+
+The helper script uses `apt-get` and will prompt for sudo privileges when necessary. If you are on another distribution, install equivalent packages manually before continuing.
 
 ### Building and Running
 
