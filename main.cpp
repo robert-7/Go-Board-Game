@@ -74,19 +74,18 @@ struct Camera {
 int wireframe = 0;
 int lighting = 1;
 int material = 1;
-int pauseTeapot_y = 1;
-int pauseTeapot_x = 1;
+int pauseBoardRotation_y = 1;
+int pauseBoardRotation_x = 1;
 int pauseLighting = 0;
 int depthTest = 1;
 int cullFace = 1;
 int smooth = 1;
 int enabletexture = 0;
 
-constexpr int INITIAL_TEAPOT_ANGLE_X = 45;
-constexpr int INITIAL_TEAPOT_ANGLE_Y = 0;
-float angle_x = INITIAL_TEAPOT_ANGLE_X;
-float angle_y = INITIAL_TEAPOT_ANGLE_Y;
-float angle2 = 0; // Useless
+constexpr int INITIAL_BOARD_ANGLE_X = 45;
+constexpr int INITIAL_BOARD_ANGLE_Y = 0;
+float angle_x = INITIAL_BOARD_ANGLE_X;
+float angle_y = INITIAL_BOARD_ANGLE_Y;
 float translatelight = 0;
 
 Camera camera{INITIAL_CAM_X, INITIAL_CAM_Y, INITIAL_CAM_Z};
@@ -96,7 +95,8 @@ int placex = 0;
 int placey = 0;
 int col = 1;
 float t = 0;
-constexpr float TIME_INCREMENT = 0.002; // Depicts how fast time increments.
+constexpr float TIME_INCREMENT = 0.002;  // Depicts how fast time increments.
+constexpr int DEFAULT_SLEEP_TIME = 3000; // Default sleep time in microseconds.
 
 // Behind the Scenes
 std::array<std::array<int, BOARD_SIZE>, BOARD_SIZE> board_status{};
@@ -181,8 +181,8 @@ void keyboard(unsigned char key, [[maybe_unused]] int x, [[maybe_unused]] int y)
     7 : Toggle between smooth and flat shading
     8 : Toggle texture
 
-    o,O : Toggle teapot rotation along the y-axis
-    p,P : Toggle teapot rotation along the x-axis
+    o,O : Toggle board rotation along the y-axis
+    p,P : Toggle board rotation along the x-axis
     r,R : Activate "reset board option"
     y,Y : Confirm  "reset board option"
     n,N : Cancel   "reset board option"
@@ -264,14 +264,14 @@ void keyboard(unsigned char key, [[maybe_unused]] int x, [[maybe_unused]] int y)
     case 'o':
     case 'O':
         std::cout << "PRESSED O\n";
-        pauseTeapot_y = !pauseTeapot_y;
+        pauseBoardRotation_y = !pauseBoardRotation_y;
 
         break;
 
     case 'p':
     case 'P':
         std::cout << "PRESSED P\n";
-        pauseTeapot_x = !pauseTeapot_x;
+        pauseBoardRotation_x = !pauseBoardRotation_x;
 
         break;
 
@@ -383,34 +383,28 @@ void mouse(int button, int state, int x, int y) {
 }
 
 void idle() {
-    if (!pauseTeapot_y) {
-        angle_y = angle_y + 0.5;
-
-        if (angle_y > 360) {
-            angle_y = angle_y - 360;
+    const float BOARD_ROTATION_STEP = 0.5f;
+    const float ANGLE_LIMIT = 360.0f;
+    if (!pauseBoardRotation_y) {
+        angle_y += BOARD_ROTATION_STEP;
+        if (angle_y > ANGLE_LIMIT) {
+            angle_y -= ANGLE_LIMIT;
         }
     }
 
-    if (!pauseTeapot_x) {
-        angle_x = angle_x + 0.5;
-
-        if (angle_x > 360) {
-            angle_x = angle_x - 360;
+    if (!pauseBoardRotation_x) {
+        angle_x += BOARD_ROTATION_STEP;
+        if (angle_x > ANGLE_LIMIT) {
+            angle_x -= ANGLE_LIMIT;
         }
-    }
-
-    angle2 = angle2 + 0.5;
-
-    if (angle2 > 360) {
-        angle2 = angle2 - 360;
     }
 
     /*
     if (!pauseLighting) {
-    translatelight = translatelight + 0.5;
+    translatelight += BOARD_ROTATION_STEP;
 
     if (translatelight > 360) {
-    translatelight = translatelight - 360;
+        translatelight -= 360;
     }
     }
     */
@@ -441,12 +435,12 @@ void lightingFunc() {
 }
 
 void materialFunc() {
-    // Add a diffuse component to our teapot.  The diffuse reflection constant
+    // Add a diffuse component to our board.  The diffuse reflection constant
     // is white (white light source produces white reflection).
     GLfloat materialdiffuse[4] = {0.5, 0.5, 1.0, 1.0};
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, materialdiffuse);
 
-    // Add a specular component to our teapot.  The specular reflection constant
+    // Add a specular component to our board.  The specular reflection constant
     // is white (white light source produces white reflection).
     GLfloat materialspecular[4] = {1.0, 1.0, 1.0, 1.0};
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, materialspecular);
@@ -594,10 +588,7 @@ void DrawUnitCube(int color) {
 
     glEnd();
 
-    // Windows
-    // Sleep(3000);
-    // Linux
-    usleep(3000);
+    usleep(DEFAULT_SLEEP_TIME);
 }
 
 void display() {
@@ -640,7 +631,7 @@ void display() {
     glScalef(1.0, 0.05, 1.0); // Flatten the Cube.
                               // It should look like a board now.
 
-    // Specify material for the teapot we'll be drawing.
+    // Specify material for the board we'll be drawing.
     if (material) {
         materialFunc();
     }

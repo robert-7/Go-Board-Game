@@ -80,8 +80,8 @@ Below are the keyboard explanations:
 7 : Toggle between smooth and flat shading
 8 : Toggle texture
 
-o,O : Toggle teapot rotation along the y-axis
-p,P : Toggle teapot rotation along the x-axis
+o,O : Toggle board rotation along the y-axis
+p,P : Toggle board rotation along the x-axis
 r,R : Activate "reset board option"
 y,Y : Confirm  "reset board option"
 n,N : Cancel   "reset board option"
