@@ -57,6 +57,7 @@ int  lastY = 0;
 const float ZOOM_SCALE = 0.01;
 
 constexpr int BOARD_SIZE = 19;
+constexpr int BOARD_CENTER = BOARD_SIZE / 2;
 
 // Global Constants
 // Camera initial position
@@ -83,8 +84,11 @@ int depthTest = 1;
 int cullFace = 1;
 int smooth = 1;
 int enabletexture = 0;
-float angle_x = 45;
-float angle_y = 0;
+
+constexpr int INITIAL_TEAPOT_ANGLE_X = 45;
+constexpr int INITIAL_TEAPOT_ANGLE_Y = 0;
+float angle_x = INITIAL_TEAPOT_ANGLE_X;
+float angle_y = INITIAL_TEAPOT_ANGLE_Y;
 float angle2 = 0; // Useless
 float translatelight = 0;
 
@@ -95,9 +99,9 @@ int placex = 0;
 int placey = 0;
 int col = 1;
 float t = 0;
-float inc = 0.002; // Depicts how fast time increments.
+constexpr float TIME_INCREMENT = 0.002; // Depicts how fast time increments.
 
-				   // Behind the Scenes
+// Behind the Scenes
 std::array<std::array<int, BOARD_SIZE>, BOARD_SIZE> board_status{};
 std::array<std::array<int, BOARD_SIZE>, BOARD_SIZE> liberties_status{};
 int restart_option = 0;
@@ -128,17 +132,21 @@ void jump_off(int x0, int y0, int color);
 
 //! Program entry point
 int main(int argc, char** argv) {
-
+	const int DEFAULT_WINDOW_WIDTH = 512;
+	const int DEFAULT_WINDOW_HEIGHT = 512;
+	const int DEFAULT_WINDOW_X = 100;
+	const int DEFAULT_WINDOW_Y = 100;
+	const char *WINDOW_TITLE = "Go Board Game";
 	// initialize GLUT
 	glutInit(&argc, argv);
 	// set visual
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 	// set physical window properties
-	glutInitWindowSize(512, 512);
+	glutInitWindowSize(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
 	// position window on the screen
-	glutInitWindowPosition(100, 100);
+	glutInitWindowPosition(DEFAULT_WINDOW_X, DEFAULT_WINDOW_Y);
 	// create window
-	windowID = glutCreateWindow("hello");
+	windowID = glutCreateWindow(WINDOW_TITLE);
 
 	ilInit();
 	iluInit();
@@ -279,35 +287,35 @@ void keyboard(unsigned char key, [[maybe_unused]] int x, [[maybe_unused]] int y)
 
 	case 'a':
 	case 'A':
-		if (placex > -9) { placex -= 1; }
+		if (placex > -BOARD_CENTER) { placex -= 1; }
 
 		break;
 
 	case 'w':
 	case 'W':
-		if (placey < 9) { placey += 1; }
+		if (placey < BOARD_CENTER) { placey += 1; }
 
 		break;
 	case 's':
 	case 'S':
-		if (placey > -9) { placey -= 1; }
+		if (placey > -BOARD_CENTER) { placey -= 1; }
 
 		break;
 	case 'd':
 	case 'D':
-		if (placex < 9) { placex += 1; }
+		if (placex < BOARD_CENTER) { placex += 1; }
 
 		break;
 
-	case 13:
-		if (board_status[placex + 9][placey + 9] != 0)
+	case '\r':
+		if (board_status[placex + BOARD_CENTER][placey + BOARD_CENTER] != 0)
 		{
 			std::cout << "YOU CAN'T PLACE A PIECE HERE BECAUSE THERE ALREADY IS A PIECE HERE!!!\n";
 		}
 		else
 		{
 			std::cout << "ENTER KEY PRESSED!!!\n";
-			make_move(placex + 9, placey + 9, col);
+			make_move(placex + BOARD_CENTER, placey + BOARD_CENTER, col);
 			if (col == 1) { col = 2; }
 			else { col = 1; }
 		}
@@ -377,23 +385,6 @@ void mouse(int button, int state, int x, int y)
 		{
 			updateCamZPos = false;
 		}
-	}
-}
-
-void printMatrix()
-{
-	float matrixData[16];
-
-	glGetFloatv(GL_MODELVIEW_MATRIX, matrixData);
-
-	std::cout << std::endl;
-
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			std::cout << matrixData[i + 4 * j] << ", ";
-		}
-
-		std::cout << std::endl;
 	}
 }
 
@@ -692,7 +683,7 @@ void display()
 		for (const auto& piece : L) {
 			jump_off(piece[0], piece[1], piece[2]);
 		}
-		t += (inc*L.size());
+		t += (TIME_INCREMENT*L.size());
 	}
 	if (t > 1) {
 		t = 0;
