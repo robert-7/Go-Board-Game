@@ -58,17 +58,21 @@ const float ZOOM_SCALE = 0.01;
 
 constexpr int BOARD_SIZE = 19;
 
-GLdouble camXPos = 0.0;
-GLdouble camYPos = 0.0;
-GLdouble camZPos = -1.5;
-
+// Global Constants
+// Camera initial position
+constexpr GLdouble INITIAL_CAM_X = 0.0;
+constexpr GLdouble INITIAL_CAM_Y = 0.0;
+constexpr GLdouble INITIAL_CAM_Z = -1.5;
 constexpr float PI = 3.14159265358979323846F; // Pi constant for trigonometric helpers
 
-const GLdouble CAMERA_FOVY = 60.0;
-const GLdouble NEAR_CLIP = 0.1;
-const GLdouble FAR_CLIP = 1000.0;
+struct Camera {
+	GLdouble x;
+	GLdouble y;
+	GLdouble z;
+};
 
-// global variables
+
+
 int wireframe = 0;
 int lighting = 1;
 int material = 1;
@@ -79,10 +83,12 @@ int depthTest = 1;
 int cullFace = 1;
 int smooth = 1;
 int enabletexture = 0;
-float angle_y = 0;
 float angle_x = 45;
+float angle_y = 0;
 float angle2 = 0; // Useless
 float translatelight = 0;
+
+Camera camera{ INITIAL_CAM_X, INITIAL_CAM_Y, INITIAL_CAM_Z };
 
 // Behind the Scenes variables
 int placex = 0;
@@ -107,8 +113,8 @@ void keyboard(unsigned char, int, int);
 void init();
 void idle();
 void SetImage();
-void DrawSphere(int color);
-void DrawUnitCube(int color);
+void DrawSphere(int);
+void DrawUnitCube(int);
 void ApplyTransformations(float indx, float indy, float z);
 void ApplyTransformationGeneral(float indx, float indy, float z);
 
@@ -158,7 +164,7 @@ int main(int argc, char** argv) {
 	return 0;
 }
 
-void keyboard(unsigned char key, int x, int y)
+void keyboard(unsigned char key, [[maybe_unused]] int x, [[maybe_unused]] int y)
 {
 	/*
 
@@ -343,9 +349,9 @@ void motion(int x, int y)
 	// If the RMB is pressed and dragged then zoom in / out
 	if (updateCamZPos)
 	{
-		// Update camera z position
-		camZPos += (y - lastY) * ZOOM_SCALE;
-		camXPos += (x - lastX) * ZOOM_SCALE;
+		// Update camera position while the mouse is dragged
+		camera.z += (y - lastY) * ZOOM_SCALE;
+		camera.x += (x - lastX) * ZOOM_SCALE;
 		lastX = x;
 		lastY = y;
 
@@ -443,8 +449,9 @@ void lightingFunc()
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightstrength);
 
 	// Specify specular component.  Specular component is green.
-	//GLfloat lightspecular[4] = {0.0, 0.0, 0.0, 1.0};
-	GLfloat lightspecular[4] = { 0.0, 2.0, 0.0, 1.0 };
+	// TODO: Decide on desired specular component -- IF NEEDED
+	// GLfloat lightspecular[4] = {0.0, 0.0, 0.0, 1.0};
+	// GLfloat lightspecular[4] = { 0.0, 2.0, 0.0, 1.0 };
 	glLightfv(GL_LIGHT0, GL_SPECULAR, lightstrength);
 
 	GLfloat spread = 90 - 90 * t;
@@ -620,7 +627,7 @@ void display()
 	glLoadIdentity();
 
 	// Specify camera transformation
-	glTranslatef(camXPos, camYPos, camZPos);
+	glTranslatef(static_cast<GLfloat>(camera.x), static_cast<GLfloat>(camera.y), static_cast<GLfloat>(camera.z));
 
 	// Specify the lighting we'll be using for this app.  Note that
 	// the lights can be transformed using the usual translate, rotate,
@@ -702,7 +709,7 @@ void display()
 	glutSwapBuffers();
 }
 
-void ApplyTransformations(float indx, float indy, float z)
+void ApplyTransformations(float indx, float indy, [[maybe_unused]] float z)
 {
 	int i;
 	if (indx < 0)

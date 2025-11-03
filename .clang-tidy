@@ -1,18 +1,22 @@
 # clang-tidy configuration for Go-Board-Game
 # Keep checks at tool defaults while treating all warnings as errors.
-# clang-diagnostic-* : surface compiler-style warnings (unused variables, conversions, etc.)
 # clang-analyzer-*   : enable static analysis passes for deeper bug finding
+# clang-diagnostic-* : surface compiler-style warnings (unused variables, conversions, etc.)
+# clang-diagnostic-unused-const-variable : warn on unused 'const' variables
 # google-build-using-namespace : reject global using-namespace directives
 # modernize-deprecated-headers : prefer C++ standard headers over legacy C ones
 # modernize-loop-convert : prefer range-based for loops over traditional loops
 # modernize-use-stdarray : prefer 'std::array' over C-style arrays
 # modernize-use-using : prefer 'using' type alias declarations over 'typedef's
+# readability-magic-numbers : discourage use of magic numbers in code
 Checks: >
-  clang-diagnostic-*,
   clang-analyzer-*,
+  clang-diagnostic-*,
+  clang-diagnostic-unused-const-variable,
   google-build-using-namespace,
   modernize-deprecated-headers,
   modernize-loop-convert,
   modernize-use-stdarray,
   modernize-use-using
+
 WarningsAsErrors: '*'
