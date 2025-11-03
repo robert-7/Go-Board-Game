@@ -20,4 +20,5 @@ run_with_sudo apt-get install -y \
   libdevil-dev \
   cmake \
   clang-tidy \
+  clang-format \
   cppcheck

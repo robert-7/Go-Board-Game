@@ -13,6 +13,9 @@ cmake -S "${REPO_ROOT}" \
 	-DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
 	-DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic"
 
+# Style check with clang-format; fails if formatting differs from .clang-format.
+clang-format --dry-run --Werror "${REPO_ROOT}/main.cpp"
+
 # Static analysis with clang-tidy; uses the compile database for accurate diagnostics.
 clang-tidy "${REPO_ROOT}/main.cpp" -p "${BUILD_DIR}"
 
