@@ -6,7 +6,15 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${REPO_ROOT}/build"
 
 # Configure the build tree and (re)generate compile_commands.json used by the linters.
-cmake -S "${REPO_ROOT}" -B "${BUILD_DIR}" -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+# Enable comprehensive warnings so clang diagnostics (unused constants, etc.) surface during analysis.
+cmake -S "${REPO_ROOT}" \
+	-B "${BUILD_DIR}" \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+	-DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic"
+
+# Style check with clang-format; fails if formatting differs from .clang-format.
+clang-format --dry-run --Werror "${REPO_ROOT}/main.cpp"
 
 # Static analysis with clang-tidy; uses the compile database for accurate diagnostics.
 clang-tidy "${REPO_ROOT}/main.cpp" -p "${BUILD_DIR}"
