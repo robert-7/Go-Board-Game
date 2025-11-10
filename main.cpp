@@ -1,12 +1,11 @@
-// OLD INCLUDES/USINGS
-// #include <Windows.h>
-// #include <GL\glew.h>
-// #include <GL\freeglut.h>
-// Standard library
+// Standard libraries
 #include <array>
 #include <cmath>
 #include <iostream> // For std::cout
 #include <unistd.h> // For usleep
+#include <list>
+#include <queue>
+#include <vector>
 
 // includes, graphics
 #include <GL/freeglut_std.h>
@@ -20,11 +19,6 @@
 
 ILuint il[3] = {0, 1, 2};
 GLuint texture[3] = {0, 1, 2};
-
-// For the queue
-#include <list>
-#include <queue>
-#include <vector>
 
 #define GL_CLAMP_TO_EDGE 0x812F
 
@@ -115,10 +109,10 @@ void jump_off(int x0, int y0, int color);
 
 //! Program entry point
 int main(int argc, char **argv) {
-    const int DEFAULT_WINDOW_WIDTH = 512;
-    const int DEFAULT_WINDOW_HEIGHT = 512;
-    const int DEFAULT_WINDOW_X = 100;
-    const int DEFAULT_WINDOW_Y = 100;
+    const int DEFAULT_WINDOW_WIDTH = 768;
+    const int DEFAULT_WINDOW_HEIGHT = 768;
+    const int DEFAULT_WINDOW_X = 256;
+    const int DEFAULT_WINDOW_Y = 256;
     const char *WINDOW_TITLE = "Go Board Game";
     // initialize GLUT
     glutInit(&argc, argv);
