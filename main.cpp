@@ -33,17 +33,17 @@ void motion(int x, int y);
 bool update_cam_z_pos = false;
 int last_x = 0;
 int last_y = 0;
-const float zoom_scale = 0.01;
+const float ZOOM_SCALE = 0.01;
 
-constexpr int board_size = 19;
-constexpr int board_center = board_size / 2;
+constexpr int BOARD_SIZE = 19;
+constexpr int BOARD_CENTER = BOARD_SIZE / 2;
 
 // Global Constants
 // Camera initial position
-constexpr GLdouble initial_cam_x = 0.0;
-constexpr GLdouble initial_cam_y = 0.0;
-constexpr GLdouble initial_cam_z = -1.5;
-constexpr float pi = 3.14159265358979323846F; // Pi constant for trigonometric helpers
+constexpr GLdouble INITIAL_CAM_X = 0.0;
+constexpr GLdouble INITIAL_CAM_Y = 0.0;
+constexpr GLdouble INITIAL_CAM_Z = -1.5;
+constexpr float PI = 3.14159265358979323846F; // Pi constant for trigonometric helpers
 
 struct Camera {
     GLdouble x;
@@ -62,25 +62,25 @@ int cull_face = 1;
 int smooth_shading = 1;
 int enable_texture = 0;
 
-constexpr int initial_board_angle_x = 45;
-constexpr int initial_board_angle_y = 0;
-float angle_x = initial_board_angle_x;
-float angle_y = initial_board_angle_y;
+constexpr int INITIAL_BOARD_ANGLE_X = 45;
+constexpr int INITIAL_BOARD_ANGLE_Y = 0;
+float angle_x = INITIAL_BOARD_ANGLE_X;
+float angle_y = INITIAL_BOARD_ANGLE_Y;
 float translate_light = 0;
 
-Camera camera{initial_cam_x, initial_cam_y, initial_cam_z};
+Camera camera{INITIAL_CAM_X, INITIAL_CAM_Y, INITIAL_CAM_Z};
 
 // Behind the Scenes variables
 int place_x = 0;
 int place_y = 0;
 int stone_color = 1;
 float animation_time = 0;
-constexpr float time_increment = 0.002;  // Depicts how fast time increments.
-constexpr int default_sleep_time = 3000; // Default sleep time in microseconds.
+constexpr float TIME_INCREMENT = 0.002;  // Depicts how fast time increments.
+constexpr int DEFAULT_SLEEP_TIME = 3000; // Default sleep time in microseconds.
 
 // Behind the Scenes
-std::array<std::array<int, board_size>, board_size> board_status{};
-std::array<std::array<int, board_size>, board_size> liberties_status{};
+std::array<std::array<int, BOARD_SIZE>, BOARD_SIZE> board_status{};
+std::array<std::array<int, BOARD_SIZE>, BOARD_SIZE> liberties_status{};
 int restart_option = 0;
 std::queue<int> rm_queue;
 std::list<std::vector<int>> captured_groups;
@@ -257,7 +257,7 @@ void keyboard(unsigned char key, [[maybe_unused]] int x, [[maybe_unused]] int y)
 
     case 'a':
     case 'A':
-        if (place_x > -board_center) {
+        if (place_x > -BOARD_CENTER) {
             place_x -= 1;
         }
 
@@ -265,33 +265,33 @@ void keyboard(unsigned char key, [[maybe_unused]] int x, [[maybe_unused]] int y)
 
     case 'w':
     case 'W':
-        if (place_y < board_center) {
+        if (place_y < BOARD_CENTER) {
             place_y += 1;
         }
 
         break;
     case 's':
     case 'S':
-        if (place_y > -board_center) {
+        if (place_y > -BOARD_CENTER) {
             place_y -= 1;
         }
 
         break;
     case 'd':
     case 'D':
-        if (place_x < board_center) {
+        if (place_x < BOARD_CENTER) {
             place_x += 1;
         }
 
         break;
 
     case '\r':
-        if (board_status[place_x + board_center][place_y + board_center] != 0) {
+        if (board_status[place_x + BOARD_CENTER][place_y + BOARD_CENTER] != 0) {
             std::cout << "YOU CAN'T PLACE A PIECE HERE BECAUSE THERE ALREADY IS A "
                          "PIECE HERE!!!\n";
         } else {
             std::cout << "ENTER KEY PRESSED!!!\n";
-            make_move(place_x + board_center, place_y + board_center, stone_color);
+            make_move(place_x + BOARD_CENTER, place_y + BOARD_CENTER, stone_color);
             if (stone_color == 1) {
                 stone_color = 2;
             } else {
@@ -337,8 +337,8 @@ void motion(int x, int y) {
     // If the RMB is pressed and dragged then zoom in / out
     if (update_cam_z_pos) {
         // Update camera position while the mouse is dragged
-        camera.z += (y - last_y) * zoom_scale;
-        camera.x += (x - last_x) * zoom_scale;
+        camera.z += (y - last_y) * ZOOM_SCALE;
+        camera.x += (x - last_x) * ZOOM_SCALE;
         last_x = x;
         last_y = y;
 
@@ -568,7 +568,7 @@ void draw_unit_cube(int color) {
 
     glEnd();
 
-    usleep(default_sleep_time);
+    usleep(DEFAULT_SLEEP_TIME);
 }
 
 void display() {
@@ -595,7 +595,7 @@ void display() {
     glPushMatrix();
 
     //////////////////// MOVING LIGHT!!!!! ////////////////////
-    glTranslatef(2.0F * std::sin(translate_light * 2.0F * pi / 360.0F), 0.0F, 0.0F);
+    glTranslatef(2.0F * std::sin(translate_light * 2.0F * PI / 360.0F), 0.0F, 0.0F);
 
     if (lighting) {
         lighting_func();
@@ -648,7 +648,7 @@ void display() {
         for (const auto &piece : captured_groups) {
             jump_off(piece[0], piece[1], piece[2]);
         }
-        animation_time += (time_increment * captured_groups.size());
+        animation_time += (TIME_INCREMENT * captured_groups.size());
     }
     if (animation_time > 1) {
         animation_time = 0;
@@ -787,7 +787,7 @@ void jump_off(int x0, int z0, int color) {
     // Draw Thigh
     glPushMatrix();
     if (animation_time < 0.1) {
-        glRotatef(-80 + 80 * std::sin(animation_time * 10.0F * pi), 1.0, 0.0, 1.0);
+        glRotatef(-80 + 80 * std::sin(animation_time * 10.0F * PI), 1.0, 0.0, 1.0);
     } else {
         glRotatef(-80, 1.0, 0.0, 1.0);
     }
@@ -801,7 +801,7 @@ void jump_off(int x0, int z0, int color) {
 
     glTranslatef(0, -0.8, 0);
     if (animation_time < 0.1) {
-        glRotatef(90 - 90 * std::sin(animation_time * 10.0F * pi), 1.0, 0.0, 1.0);
+        glRotatef(90 - 90 * std::sin(animation_time * 10.0F * PI), 1.0, 0.0, 1.0);
     } else {
         glRotatef(90, 1.0, 0.0, 1.0);
     }
@@ -814,7 +814,7 @@ void jump_off(int x0, int z0, int color) {
     glPushMatrix();
     glTranslatef(0, -1.0, 0);
     if (animation_time < 0.1) {
-        glRotatef(-100 + 100 * std::sin(animation_time * 10.0F * pi), 1.0, 0.0, 1.0);
+        glRotatef(-100 + 100 * std::sin(animation_time * 10.0F * PI), 1.0, 0.0, 1.0);
     } else {
         glRotatef(-100, 1.0, 0.0, 1.0);
     }

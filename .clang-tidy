@@ -24,13 +24,9 @@ Checks: >
 WarningsAsErrors: '*'
 
 CheckOptions:
-  # Adopt a consistent C++ naming convention: types PascalCase, functions camelBack, variables lower_case.
+  # ===== Types =====
   - key: readability-identifier-naming.NamespaceCase
     value: lower_case
-  - key: readability-identifier-naming.EnumCase
-    value: CamelCase
-  - key: readability-identifier-naming.EnumConstantCase
-    value: UPPER_CASE
   - key: readability-identifier-naming.ClassCase
     value: CamelCase
   - key: readability-identifier-naming.StructCase
@@ -39,19 +35,37 @@ CheckOptions:
     value: CamelCase
   - key: readability-identifier-naming.TypeAliasCase
     value: CamelCase
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+
+  # ===== Enum Values =====
+  - key: readability-identifier-naming.EnumConstantCase
+    value: UPPER_CASE
+
+  # ===== Functions & Methods =====
+  # (matches typical C++ engine style; avoids collision with OpenGL's mixed conventions)
   - key: readability-identifier-naming.FunctionCase
     value: lower_case
   - key: readability-identifier-naming.MethodCase
     value: lower_case
-  - key: readability-identifier-naming.MemberCase
-    value: lower_case
+
+  # ===== Variables =====
   - key: readability-identifier-naming.VariableCase
     value: lower_case
   - key: readability-identifier-naming.ParameterCase
     value: lower_case
+
+  # ===== Member Variables =====
+  # Strongly recommended for rendering code for clarity
+  - key: readability-identifier-naming.MemberCase
+    value: lower_case
+  - key: readability-identifier-naming.PrivateMemberPrefix
+    value: m_
+
+  # ===== Constants =====
   - key: readability-identifier-naming.GlobalConstantCase
-    value: lower_case
+    value: UPPER_CASE
   - key: readability-identifier-naming.StaticConstantCase
-    value: lower_case
+    value: UPPER_CASE
   - key: readability-identifier-naming.ConstexprVariableCase
-    value: lower_case
+    value: UPPER_CASE
