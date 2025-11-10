@@ -3,6 +3,11 @@
 #include <cmath>
 #include <iostream> // For std::cout
 #include <list>
+#if defined(__has_include)
+#if __has_include(<numbers>)
+#include <numbers>
+#endif
+#endif
 #include <queue>
 #include <unistd.h> // For usleep
 #include <vector>
@@ -20,7 +25,7 @@
 std::array<ILuint, 3> image_ids{0, 1, 2};
 std::array<GLuint, 3> textures{0, 1, 2};
 
-#define GL_CLAMP_TO_EDGE 0x812F
+constexpr GLenum GL_CLAMP_TO_EDGE_VALUE = 0x812F;
 
 // Window settings
 int window_id; // Glut window ID (for display)
@@ -43,7 +48,11 @@ constexpr int BOARD_CENTER = BOARD_SIZE / 2;
 constexpr GLdouble INITIAL_CAM_X = 0.0;
 constexpr GLdouble INITIAL_CAM_Y = 0.0;
 constexpr GLdouble INITIAL_CAM_Z = -1.5;
-constexpr float PI = 3.14159265358979323846F; // Pi constant for trigonometric helpers
+#if defined(__cpp_lib_math_constants)
+constexpr float PI = std::numbers::pi_v<float>; // Pi constant for trigonometric helpers
+#else
+constexpr float PI = 3.14159265358979323846F; // NOLINT(modernize-use-std-numbers)
+#endif
 
 struct Camera {
     GLdouble x;
@@ -68,7 +77,7 @@ float angle_x = INITIAL_BOARD_ANGLE_X;
 float angle_y = INITIAL_BOARD_ANGLE_Y;
 float translate_light = 0;
 
-Camera camera{INITIAL_CAM_X, INITIAL_CAM_Y, INITIAL_CAM_Z};
+Camera camera{.x = INITIAL_CAM_X, .y = INITIAL_CAM_Y, .z = INITIAL_CAM_Z};
 
 // Behind the Scenes variables
 int place_x = 0;
@@ -102,13 +111,13 @@ void apply_transformation_general(float indx, float indy, float z);
 // Behind the Scenes
 void init_board();
 void clear_liberties();
-int make_move(int x, int y, int piece);
-int check_liberties(int x, int y, int originx, int originy, int piece);
+auto make_move(int x, int y, int piece) -> int;
+auto check_liberties(int x, int y, int originx, int originy, int piece) -> int;
 void remove_block(int x, int y, int piece);
 void jump_off(int x0, int y0, int color);
 
 //! Program entry point
-int main(int argc, char **argv) {
+auto main(int argc, char **argv) -> int {
     const int default_window_width = 768;
     const int default_window_height = 768;
     const int default_window_x = 256;
@@ -705,8 +714,10 @@ void set_images() {
     glBindTexture(GL_TEXTURE_2D, textures[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+                    static_cast<GLfloat>(GL_CLAMP_TO_EDGE_VALUE));
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
+                    static_cast<GLfloat>(GL_CLAMP_TO_EDGE_VALUE));
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ilGetInteger(IL_IMAGE_WIDTH),
                  ilGetInteger(IL_IMAGE_HEIGHT), 0, GL_RGB, GL_UNSIGNED_SHORT,
                  ilGetData());
@@ -719,8 +730,10 @@ void set_images() {
     glBindTexture(GL_TEXTURE_2D, textures[1]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+                    static_cast<GLfloat>(GL_CLAMP_TO_EDGE_VALUE));
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
+                    static_cast<GLfloat>(GL_CLAMP_TO_EDGE_VALUE));
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ilGetInteger(IL_IMAGE_WIDTH),
                  ilGetInteger(IL_IMAGE_HEIGHT), 0, GL_RGB, GL_UNSIGNED_SHORT,
                  ilGetData());
@@ -744,7 +757,7 @@ void clear_liberties() {
     }
 }
 
-int check_liberties(int x, int y, int originx, int originy, int piece) {
+auto check_liberties(int x, int y, int originx, int originy, int piece) -> int {
     if (x < 0 || x > 18 || y < 0 || y > 18) {
         return 0;
     }
@@ -852,7 +865,7 @@ void remove_block(int x, int y, int piece) {
     }
 }
 
-int make_move(int x, int y, int piece) {
+auto make_move(int x, int y, int piece) -> int {
     board_status[x][y] = piece;
     clear_liberties();
     int other;
