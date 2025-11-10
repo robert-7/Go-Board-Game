@@ -33,14 +33,8 @@ git clone https://github.com/robert-7/Go-Board-Game.git && cd Go-Board-Game
 ## Building and Running
 
 Building requires the OpenGL and DevIL libraries imported.
-To build the binary, simply run `make`.
-To run the built binary, simply run `./main`.
+To build and run the binary, simply run `make && ./main`.
 To clean up, run `make clean`.
-
-### Building Gotchas
-
-* `-lstdc++` was added to resolve [this issue](https://stackoverflow.com/questions/33263288/libstdc-dso-missing-from-command-line)
-* `-lm` was added to resolve [this issue](https://stackoverflow.com/questions/16006145/ld-undefined-reference-to-symbol-log2glibc-2-2-5).
 
 ## Linting
 
@@ -50,7 +44,8 @@ The repository uses the same commands locally and in CI. After installing the pa
 ./scripts/run_lint.sh
 ```
 
-The script configures CMake, runs clang-tidy, and then runs cppcheck with the same settings used in CI. It can be removed along with the `build` directory when you finish linting.
+The script configures CMake, runs clang-tidy, and then runs cppcheck with the same settings used in CI.
+It can be removed along with the `build` directory when you finish linting.
 
 To run linting automatically before each commit, install [`pre-commit`](https://pre-commit.com/) (e.g., `pip install pre-commit` or `sudo apt install pre-commit`), then enable the hooks once:
 

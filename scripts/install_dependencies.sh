@@ -21,4 +21,5 @@ run_with_sudo apt-get install -y \
   cmake \
   clang-tidy \
   clang-format \
-  cppcheck
+  cppcheck \
+  iwyu # enforces include hygiene
