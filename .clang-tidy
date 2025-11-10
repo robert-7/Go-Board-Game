@@ -4,6 +4,7 @@
 # clang-diagnostic-* : surface compiler-style warnings (unused variables, conversions, etc.)
 # clang-diagnostic-unused-const-variable : warn on unused 'const' variables
 # google-build-using-namespace : reject global using-namespace directives
+# misc-include-cleaner : ensure proper #includes are present and unused ones are removed
 # modernize-deprecated-headers : prefer C++ standard headers over legacy C ones
 # modernize-loop-convert : prefer range-based for loops over traditional loops
 # modernize-use-stdarray : prefer 'std::array' over C-style arrays
@@ -12,8 +13,8 @@
 Checks: >
   clang-analyzer-*,
   clang-diagnostic-*,
-  clang-diagnostic-unused-const-variable,
   google-build-using-namespace,
+  modernize-avoid-c-arrays,
   modernize-deprecated-headers,
   modernize-loop-convert,
   modernize-use-stdarray,
@@ -69,3 +70,16 @@ CheckOptions:
     value: UPPER_CASE
   - key: readability-identifier-naming.ConstexprVariableCase
     value: UPPER_CASE
+
+
+  # ===== Modernize tuning =====
+  - key: modernize-loop-convert.MinConfidence
+    value: reasonable
+  - key: modernize-use-override.UseOverride
+    value: '1'
+  - key: modernize-avoid-c-arrays.CheckCStrings
+    value: '1'
+
+  # ===== Include cleaner =====
+  - key: misc-include-cleaner.StrictMode
+    value: '0'

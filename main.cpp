@@ -17,8 +17,8 @@
 #include <IL/ilu.h>
 #include <IL/ilut.h>
 
-ILuint image_ids[3] = {0, 1, 2};
-GLuint textures[3] = {0, 1, 2};
+std::array<ILuint, 3> image_ids{0, 1, 2};
+std::array<GLuint, 3> textures{0, 1, 2};
 
 #define GL_CLAMP_TO_EDGE 0x812F
 
@@ -130,8 +130,8 @@ int main(int argc, char **argv) {
     ilutInit();
     ilutRenderer(ILUT_OPENGL);
 
-    ilGenImages(2, image_ids);
-    glGenTextures(2, textures);
+    ilGenImages(2, image_ids.data());
+    glGenTextures(2, textures.data());
 
     // initialize OpenGL
     init();
@@ -394,19 +394,19 @@ void idle() {
 
 void lighting_func() {
     // Specify light position
-    GLfloat lightposition[4] = {0.0, 0.0, -0.5, 1.0};
-    glLightfv(GL_LIGHT0, GL_POSITION, lightposition);
+    const std::array<GLfloat, 4> light_position{0.0F, 0.0F, -0.5F, 1.0F};
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position.data());
 
     // Specify diffuse component.  Diffuse component is white.
     // GLfloat lightdiffuse[4] = {0.0, 0.0, 0.0, 1.0};
-    GLfloat lightstrength[4] = {2.0, 2.0, 2.0, 2.0};
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightstrength);
+    const std::array<GLfloat, 4> light_strength{2.0F, 2.0F, 2.0F, 2.0F};
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_strength.data());
 
     // Specify specular component.  Specular component is green.
     // TODO: Decide on desired specular component -- IF NEEDED
     // GLfloat lightspecular[4] = {0.0, 0.0, 0.0, 1.0};
     // GLfloat lightspecular[4] = { 0.0, 2.0, 0.0, 1.0 };
-    glLightfv(GL_LIGHT0, GL_SPECULAR, lightstrength);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_strength.data());
 
     GLfloat spread = 90 - 90 * animation_time;
     glLightfv(GL_LIGHT0, GL_SPOT_CUTOFF, &spread);
@@ -417,55 +417,55 @@ void lighting_func() {
 void material_func() {
     // Add a diffuse component to our board.  The diffuse reflection constant
     // is white (white light source produces white reflection).
-    GLfloat materialdiffuse[4] = {0.5, 0.5, 1.0, 1.0};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, materialdiffuse);
+    const std::array<GLfloat, 4> material_diffuse{0.5F, 0.5F, 1.0F, 1.0F};
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, material_diffuse.data());
 
     // Add a specular component to our board.  The specular reflection constant
     // is white (white light source produces white reflection).
-    GLfloat materialspecular[4] = {1.0, 1.0, 1.0, 1.0};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, materialspecular);
+    const std::array<GLfloat, 4> material_specular{1.0F, 1.0F, 1.0F, 1.0F};
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, material_specular.data());
 
     // Defines the shinyness (the exponent to the phong model).
-    GLfloat materialshininess[1] = {100.0};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, materialshininess);
+    const std::array<GLfloat, 1> material_shininess{100.0F};
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, material_shininess.data());
 }
 
 void draw_sphere(int color) {
-    const GLfloat color_none[4] = {0.0F, 0.0F, 0.0F, 0.0F};
+    const std::array<GLfloat, 4> color_none{0.0F, 0.0F, 0.0F, 0.0F};
 
     if (color == 0) {
-        const GLfloat color_red[4] = {1.0F, 0.0F, 0.0F, 0.0F};
-        glColor4fv(color_red);
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_red);
-        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none);
+        const std::array<GLfloat, 4> color_red{1.0F, 0.0F, 0.0F, 0.0F};
+        glColor4fv(color_red.data());
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_red.data());
+        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none.data());
     }
 
     if (color == 1) {
-        const GLfloat color_white[4] = {1.0F, 1.0F, 1.0F, 1.0F};
-        glColor4fv(color_white);
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_white);
-        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none);
+        const std::array<GLfloat, 4> color_white{1.0F, 1.0F, 1.0F, 1.0F};
+        glColor4fv(color_white.data());
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_white.data());
+        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none.data());
     }
 
     if (color == 2) {
-        const GLfloat color_black[4] = {0.0F, 0.0F, 0.0F, 0.0F};
-        glColor4fv(color_black);
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_black);
-        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none);
+        const std::array<GLfloat, 4> color_black{0.0F, 0.0F, 0.0F, 0.0F};
+        glColor4fv(color_black.data());
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_black.data());
+        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none.data());
     }
 
     if (color == 3) {
-        const GLfloat color_green[4] = {0.0F, 0.0F, 1.0F, 0.0F};
-        glColor4fv(color_green);
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_green);
-        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none);
+        const std::array<GLfloat, 4> color_green{0.0F, 0.0F, 1.0F, 0.0F};
+        glColor4fv(color_green.data());
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_green.data());
+        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none.data());
     }
 
     if (color == 4) {
-        const GLfloat color_blue[4] = {0.0F, 1.0F, 0.0F, 0.0F};
-        glColor4fv(color_blue);
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_blue);
-        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none);
+        const std::array<GLfloat, 4> color_blue{0.0F, 1.0F, 0.0F, 0.0F};
+        glColor4fv(color_blue.data());
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_blue.data());
+        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none.data());
     }
 
     glBegin(GL_TRIANGLES);
@@ -482,17 +482,17 @@ void draw_unit_cube(int color) {
     if (color == 0) {
         glBindTexture(GL_TEXTURE_2D, textures[0]);
     } else if (color == 3) {
-        const GLfloat color_none[4] = {0.0F, 0.0F, 0.0F, 0.0F};
-        const GLfloat color_green[4] = {0.0F, 0.0F, 1.0F, 0.0F};
-        glColor4fv(color_green);
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_green);
-        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none);
+        const std::array<GLfloat, 4> color_none{0.0F, 0.0F, 0.0F, 0.0F};
+        const std::array<GLfloat, 4> color_green{0.0F, 0.0F, 1.0F, 0.0F};
+        glColor4fv(color_green.data());
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_green.data());
+        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none.data());
     } else if (color == 4) {
-        const GLfloat color_none[4] = {0.0F, 0.0F, 0.0F, 0.0F};
-        const GLfloat color_blue[4] = {0.0F, 1.0F, 0.0F, 0.0F};
-        glColor4fv(color_blue);
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_blue);
-        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none);
+        const std::array<GLfloat, 4> color_none{0.0F, 0.0F, 0.0F, 0.0F};
+        const std::array<GLfloat, 4> color_blue{0.0F, 1.0F, 0.0F, 0.0F};
+        glColor4fv(color_blue.data());
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_blue.data());
+        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none.data());
     }
 
     glBegin(GL_QUADS);
