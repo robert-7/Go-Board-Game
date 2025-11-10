@@ -17,6 +17,7 @@ Checks: >
   modernize-deprecated-headers,
   modernize-loop-convert,
   modernize-use-stdarray,
-  modernize-use-using
+  modernize-use-using,
+  performance-*
 
 WarningsAsErrors: '*'

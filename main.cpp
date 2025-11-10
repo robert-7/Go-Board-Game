@@ -2,9 +2,9 @@
 #include <array>
 #include <cmath>
 #include <iostream> // For std::cout
-#include <unistd.h> // For usleep
 #include <list>
 #include <queue>
+#include <unistd.h> // For usleep
 #include <vector>
 
 // includes, graphics
