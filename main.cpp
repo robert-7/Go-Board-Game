@@ -3,30 +3,16 @@
 // #include <GL\glew.h>
 // #include <GL\freeglut.h>
 // Standard library
-#include <algorithm>
 #include <array>
 #include <cmath>
-#include <iostream>
-
-// For Sleep in Windows
-// #include <windows.h>
-// For Sleep in Linux
-#include <unistd.h>
-// #pragma comment(lib, "ILUT.lib")
-
-#include <iostream>
-
-// For Sleep in Windows
-// #include <windows.h>
-// For Sleep in Linux
-#include <iostream>
-#include <unistd.h>
+#include <iostream> // For std::cout
+#include <unistd.h> // For usleep
 
 // includes, graphics
+#include <GL/freeglut_std.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <GL/glut.h>
-
+// DevIL includes
 #define ILUT_USE_OPENGL
 #include <IL/il.h>
 #include <IL/ilu.h>

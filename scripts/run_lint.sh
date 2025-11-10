@@ -19,6 +19,9 @@ clang-format --dry-run --Werror "${REPO_ROOT}/main.cpp"
 # Static analysis with clang-tidy; uses the compile database for accurate diagnostics.
 clang-tidy "${REPO_ROOT}/main.cpp" -p "${BUILD_DIR}"
 
+# Include-What-You-Use to enforce proper includes; uses the compile database via the helper tool.
+iwyu_tool -p "${BUILD_DIR}" "${REPO_ROOT}/main.cpp"
+
 # Cross-check the same sources with cppcheck for complementary warnings.
 # ignore normalCheckLevelMaxBranches to reduce noise
 cppcheck --project="${BUILD_DIR}/compile_commands.json" --enable=warning,style,performance --error-exitcode=1 --suppress=normalCheckLevelMaxBranches
