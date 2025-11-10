@@ -8,7 +8,6 @@
 #include <numbers>
 #endif
 #endif
-#include <queue>
 #include <unistd.h> // For usleep
 #include <vector>
 
@@ -22,23 +21,13 @@
 #include <IL/ilu.h>
 #include <IL/ilut.h>
 
-std::array<ILuint, 3> image_ids{0, 1, 2};
-std::array<GLuint, 3> textures{0, 1, 2};
-
 constexpr GLenum GL_CLAMP_TO_EDGE_VALUE = 0x812F;
-
-// Window settings
-int window_id; // Glut window ID (for display)
 
 // Camera methods
 void mouse(int button, int state, int x, int y);
 void motion(int x, int y);
 
-// Camera settings
-bool update_cam_z_pos = false;
-int last_x = 0;
-int last_y = 0;
-const float ZOOM_SCALE = 0.01;
+const float ZOOM_SCALE = 0.01F;
 
 constexpr int BOARD_SIZE = 19;
 constexpr int BOARD_CENTER = BOARD_SIZE / 2;
@@ -60,61 +49,83 @@ struct Camera {
     GLdouble z;
 };
 
-int wireframe = 0;
-int lighting = 1;
-int material = 1;
-int pause_board_rotation_y = 1;
-int pause_board_rotation_x = 1;
-int pause_lighting = 0;
-int depth_test = 1;
-int cull_face = 1;
-int smooth_shading = 1;
-int enable_texture = 0;
-
 constexpr int INITIAL_BOARD_ANGLE_X = 45;
 constexpr int INITIAL_BOARD_ANGLE_Y = 0;
-float angle_x = INITIAL_BOARD_ANGLE_X;
-float angle_y = INITIAL_BOARD_ANGLE_Y;
-float translate_light = 0;
-
-Camera camera{.x = INITIAL_CAM_X, .y = INITIAL_CAM_Y, .z = INITIAL_CAM_Z};
-
-// Behind the Scenes variables
-int place_x = 0;
-int place_y = 0;
-int stone_color = 1;
-float animation_time = 0;
-constexpr float TIME_INCREMENT = 0.002;  // Depicts how fast time increments.
+constexpr float TIME_INCREMENT = 0.002F; // Depicts how fast time increments.
 constexpr int DEFAULT_SLEEP_TIME = 3000; // Default sleep time in microseconds.
 
-// Behind the Scenes
-std::array<std::array<int, BOARD_SIZE>, BOARD_SIZE> board_status{};
-std::array<std::array<int, BOARD_SIZE>, BOARD_SIZE> liberties_status{};
-int restart_option = 0;
-std::queue<int> rm_queue;
-std::list<std::vector<int>> captured_groups;
+struct GameSession {
+    std::array<ILuint, 3> image_ids{0, 1, 2};
+    std::array<GLuint, 3> textures{0, 1, 2};
+
+    int window_id = 0; // Glut window ID (for display)
+
+    bool update_cam_z_pos = false;
+    int last_x = 0;
+    int last_y = 0;
+
+    int wireframe = 0;
+    int lighting = 1;
+    int material = 1;
+    int pause_board_rotation_y = 1;
+    int pause_board_rotation_x = 1;
+    int pause_lighting = 0;
+    int depth_test = 1;
+    int cull_face = 1;
+    int smooth_shading = 1;
+    int enable_texture = 0;
+
+    float angle_x = static_cast<float>(INITIAL_BOARD_ANGLE_X);
+    float angle_y = static_cast<float>(INITIAL_BOARD_ANGLE_Y);
+    float translate_light = 0.0F;
+
+    Camera camera{.x = INITIAL_CAM_X, .y = INITIAL_CAM_Y, .z = INITIAL_CAM_Z};
+
+    int place_x = 0;
+    int place_y = 0;
+    int stone_color = 1;
+    float animation_time = 0.0F;
+
+    std::array<std::array<int, BOARD_SIZE>, BOARD_SIZE> board_status{};
+    std::array<std::array<int, BOARD_SIZE>, BOARD_SIZE> liberties_status{};
+    int restart_option = 0;
+    std::list<std::vector<int>> captured_groups;
+};
+
+auto current_session() -> GameSession & {
+    static GameSession session;
+    return session;
+}
 
 // float rm_array[1083];     // Holds the objects that will be removed.
 // int p = 0;                // Always points to the last index of rm_array.
 
 // declaration, forward
 void display();
+void display(GameSession &session);
 void keyboard(unsigned char, int, int);
-void init();
+void keyboard(GameSession &session, unsigned char, int, int);
+void mouse(int button, int state, int x, int y);
+void mouse(GameSession &session, int button, int state, int x, int y);
+void motion(int x, int y);
+void motion(GameSession &session, int x, int y);
+void init(GameSession &session);
 void idle();
-void set_images();
+void idle(GameSession &session);
+void set_images(GameSession &session);
 void draw_sphere(int color);
-void draw_unit_cube(int color);
+void draw_unit_cube(GameSession &session, int color);
 void apply_transformations(float indx, float indy, float z);
 void apply_transformation_general(float indx, float indy, float z);
 
 // Behind the Scenes
-void init_board();
-void clear_liberties();
-auto make_move(int x, int y, int piece) -> int;
-auto check_liberties(int x, int y, int originx, int originy, int piece) -> int;
-void remove_block(int x, int y, int piece);
-void jump_off(int x0, int y0, int color);
+void init_board(GameSession &session);
+void clear_liberties(GameSession &session);
+auto make_move(GameSession &session, int x, int y, int piece) -> int;
+auto check_liberties(GameSession &session, int x, int y, int originx, int originy,
+                     int piece) -> int;
+void remove_block(GameSession &session, int x, int y, int piece);
+void jump_off(GameSession &session, int x0, int y0, int color);
 
 //! Program entry point
 auto main(int argc, char **argv) -> int {
@@ -131,19 +142,21 @@ auto main(int argc, char **argv) -> int {
     glutInitWindowSize(default_window_width, default_window_height);
     // position window on the screen
     glutInitWindowPosition(default_window_x, default_window_y);
+    auto &session = current_session();
+
     // create window
-    window_id = glutCreateWindow(window_title);
+    session.window_id = glutCreateWindow(window_title);
 
     ilInit();
     iluInit();
     ilutInit();
     ilutRenderer(ILUT_OPENGL);
 
-    ilGenImages(2, image_ids.data());
-    glGenTextures(2, textures.data());
+    ilGenImages(2, session.image_ids.data());
+    glGenTextures(2, session.textures.data());
 
     // initialize OpenGL
-    init();
+    init(session);
 
     // register rendering mainloop
     glutKeyboardFunc(keyboard);
@@ -159,6 +172,12 @@ auto main(int argc, char **argv) -> int {
 }
 
 void keyboard(unsigned char key, [[maybe_unused]] int x, [[maybe_unused]] int y) {
+    auto &session = current_session();
+    keyboard(session, key, x, y);
+}
+
+void keyboard(GameSession &session, unsigned char key, [[maybe_unused]] int x,
+              [[maybe_unused]] int y) {
     /*
 
     1 : Toggle specularity
@@ -191,9 +210,9 @@ void keyboard(unsigned char key, [[maybe_unused]] int x, [[maybe_unused]] int y)
     switch (key) {
     case '1':
         // Enable/disable wireframe mode
-        wireframe = !wireframe;
+        session.wireframe = !session.wireframe;
 
-        if (wireframe) {
+        if (session.wireframe) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         } else {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -202,14 +221,14 @@ void keyboard(unsigned char key, [[maybe_unused]] int x, [[maybe_unused]] int y)
         break;
 
     case '3':
-        material = !material;
+        session.material = !session.material;
 
         break;
 
     case '5':
-        depth_test = !depth_test;
+        session.depth_test = !session.depth_test;
 
-        if (depth_test) {
+        if (session.depth_test) {
             glEnable(GL_CULL_FACE);
             glEnable(GL_DEPTH_TEST);
         } else {
@@ -219,9 +238,9 @@ void keyboard(unsigned char key, [[maybe_unused]] int x, [[maybe_unused]] int y)
         break;
 
     case '6':
-        cull_face = !cull_face;
+        session.cull_face = !session.cull_face;
 
-        if (cull_face) {
+        if (session.cull_face) {
             glEnable(GL_CULL_FACE);
         } else {
             glDisable(GL_CULL_FACE);
@@ -230,9 +249,9 @@ void keyboard(unsigned char key, [[maybe_unused]] int x, [[maybe_unused]] int y)
         break;
 
     case '7':
-        smooth_shading = !smooth_shading;
+        session.smooth_shading = !session.smooth_shading;
 
-        if (smooth_shading) {
+        if (session.smooth_shading) {
             glShadeModel(GL_SMOOTH);
         } else {
             glShadeModel(GL_FLAT);
@@ -241,9 +260,9 @@ void keyboard(unsigned char key, [[maybe_unused]] int x, [[maybe_unused]] int y)
         break;
 
     case '8':
-        enable_texture = !enable_texture;
+        session.enable_texture = !session.enable_texture;
 
-        if (enable_texture) {
+        if (session.enable_texture) {
             glEnable(GL_TEXTURE_2D);
         } else {
             glDisable(GL_TEXTURE_2D);
@@ -253,58 +272,60 @@ void keyboard(unsigned char key, [[maybe_unused]] int x, [[maybe_unused]] int y)
     case 'o':
     case 'O':
         std::cout << "PRESSED O\n";
-        pause_board_rotation_y = !pause_board_rotation_y;
+        session.pause_board_rotation_y = !session.pause_board_rotation_y;
 
         break;
 
     case 'p':
     case 'P':
         std::cout << "PRESSED P\n";
-        pause_board_rotation_x = !pause_board_rotation_x;
+        session.pause_board_rotation_x = !session.pause_board_rotation_x;
 
         break;
 
     case 'a':
     case 'A':
-        if (place_x > -BOARD_CENTER) {
-            place_x -= 1;
+        if (session.place_x > -BOARD_CENTER) {
+            session.place_x -= 1;
         }
 
         break;
 
     case 'w':
     case 'W':
-        if (place_y < BOARD_CENTER) {
-            place_y += 1;
+        if (session.place_y < BOARD_CENTER) {
+            session.place_y += 1;
         }
 
         break;
     case 's':
     case 'S':
-        if (place_y > -BOARD_CENTER) {
-            place_y -= 1;
+        if (session.place_y > -BOARD_CENTER) {
+            session.place_y -= 1;
         }
 
         break;
     case 'd':
     case 'D':
-        if (place_x < BOARD_CENTER) {
-            place_x += 1;
+        if (session.place_x < BOARD_CENTER) {
+            session.place_x += 1;
         }
 
         break;
 
     case '\r':
-        if (board_status[place_x + BOARD_CENTER][place_y + BOARD_CENTER] != 0) {
+        if (session.board_status[session.place_x + BOARD_CENTER]
+                                [session.place_y + BOARD_CENTER] != 0) {
             std::cout << "YOU CAN'T PLACE A PIECE HERE BECAUSE THERE ALREADY IS A "
                          "PIECE HERE!!!\n";
         } else {
             std::cout << "ENTER KEY PRESSED!!!\n";
-            make_move(place_x + BOARD_CENTER, place_y + BOARD_CENTER, stone_color);
-            if (stone_color == 1) {
-                stone_color = 2;
+            make_move(session, session.place_x + BOARD_CENTER,
+                      session.place_y + BOARD_CENTER, session.stone_color);
+            if (session.stone_color == 1) {
+                session.stone_color = 2;
             } else {
-                stone_color = 1;
+                session.stone_color = 1;
             }
         }
         break;
@@ -312,88 +333,103 @@ void keyboard(unsigned char key, [[maybe_unused]] int x, [[maybe_unused]] int y)
     case 'R':
         std::cout << "You pressed 'r', the restart button. Press 'y' to confirm "
                      "restart. Press 'n' to cancel.\n";
-        restart_option = 1;
+        session.restart_option = 1;
         break;
     case 'n':
     case 'N':
-        if (restart_option) {
+        if (session.restart_option) {
             std::cout << "You pressed 'n'. Restart option cancelled.\n";
-            restart_option = 0;
+            session.restart_option = 0;
         }
         break;
     case 'y':
     case 'Y':
-        if (restart_option) {
+        if (session.restart_option) {
             std::cout << "You pressed 'y'. The game has been restarted.\n";
-            init_board();
-            stone_color = 1;
+            init_board(session);
+            session.stone_color = 1;
         }
         break;
 
     case 'b':
     case 'B':
-        stone_color = 2;
+        session.stone_color = 2;
         break;
     case 'v':
     case 'V':
-        stone_color = 1;
+        session.stone_color = 1;
         break;
     }
 }
 
 // Handles mouse motion events while a button is pressed
 void motion(int x, int y) {
+    auto &session = current_session();
+    motion(session, x, y);
+}
+
+void motion(GameSession &session, int x, int y) {
     // If the RMB is pressed and dragged then zoom in / out
-    if (update_cam_z_pos) {
+    if (session.update_cam_z_pos) {
         // Update camera position while the mouse is dragged
-        camera.z += (y - last_y) * ZOOM_SCALE;
-        camera.x += (x - last_x) * ZOOM_SCALE;
-        last_x = x;
-        last_y = y;
+        session.camera.z += (y - session.last_y) * ZOOM_SCALE;
+        session.camera.x += (x - session.last_x) * ZOOM_SCALE;
+        session.last_x = x;
+        session.last_y = y;
 
         // Redraw the scene from updated camera position
-        glutSetWindow(window_id);
+        glutSetWindow(session.window_id);
         glutPostRedisplay();
     }
 }
 
 // Handles mouse button pressed / released events
 void mouse(int button, int state, int x, int y) {
+    auto &session = current_session();
+    mouse(session, button, state, x, y);
+}
+
+void mouse(GameSession &session, int button, int state, int x, int y) {
     // If the RMB is pressed and dragged then zoom in / out
     if (button == GLUT_RIGHT_BUTTON) {
         if (state == GLUT_DOWN) {
-            last_x = x;
-            last_y = y;
-            update_cam_z_pos = true;
+            session.last_x = x;
+            session.last_y = y;
+            session.update_cam_z_pos = true;
         } else {
-            update_cam_z_pos = false;
+            session.update_cam_z_pos = false;
         }
     }
 }
 
 void idle() {
+    auto &session = current_session();
+    idle(session);
+}
+
+void idle(GameSession &session) {
     const float board_rotation_step = 0.5f;
     const float angle_limit = 360.0f;
-    if (!pause_board_rotation_y) {
-        angle_y += board_rotation_step;
-        if (angle_y > angle_limit) {
-            angle_y -= angle_limit;
+    if (!session.pause_board_rotation_y) {
+        session.angle_y += board_rotation_step;
+        if (session.angle_y > angle_limit) {
+            session.angle_y -= angle_limit;
         }
     }
 
-    if (!pause_board_rotation_x) {
-        angle_x += board_rotation_step;
-        if (angle_x > angle_limit) {
-            angle_x -= angle_limit;
+    if (!session.pause_board_rotation_x) {
+        session.angle_x += board_rotation_step;
+        if (session.angle_x > angle_limit) {
+            session.angle_x -= angle_limit;
         }
     }
 
     /*
-    if (!pause_lighting) {
-    translate_light += board_rotation_step;
+    if (!session.pause_lighting) {
+    session.translate_light += board_rotation_step;
 
-    if (translate_light > 360) {
-        translate_light -= 360;
+    if (session.translate_light > 360) {
+        session.translate_light -= 360;
     }
     }
     */
@@ -401,7 +437,7 @@ void idle() {
     glutPostRedisplay();
 }
 
-void lighting_func() {
+void lighting_func(const GameSession &session) {
     // Specify light position
     const std::array<GLfloat, 4> light_position{0.0F, 0.0F, -0.5F, 1.0F};
     glLightfv(GL_LIGHT0, GL_POSITION, light_position.data());
@@ -417,7 +453,7 @@ void lighting_func() {
     // GLfloat lightspecular[4] = { 0.0, 2.0, 0.0, 1.0 };
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_strength.data());
 
-    GLfloat spread = 90 - 90 * animation_time;
+    GLfloat spread = 90.0F - 90.0F * session.animation_time;
     glLightfv(GL_LIGHT0, GL_SPOT_CUTOFF, &spread);
 
     glEnable(GL_LIGHT0);
@@ -487,9 +523,9 @@ void draw_sphere(int color) {
     glEnd();
 }
 
-void draw_unit_cube(int color) {
+void draw_unit_cube(GameSession &session, int color) {
     if (color == 0) {
-        glBindTexture(GL_TEXTURE_2D, textures[0]);
+        glBindTexture(GL_TEXTURE_2D, session.textures[0]);
     } else if (color == 3) {
         const std::array<GLfloat, 4> color_none{0.0F, 0.0F, 0.0F, 0.0F};
         const std::array<GLfloat, 4> color_green{0.0F, 0.0F, 1.0F, 0.0F};
@@ -560,7 +596,7 @@ void draw_unit_cube(int color) {
     if (color == 0) {
         glEnd();
 
-        glBindTexture(GL_TEXTURE_2D, textures[1]);
+        glBindTexture(GL_TEXTURE_2D, session.textures[1]);
         glBegin(GL_QUADS);
     }
 
@@ -581,6 +617,11 @@ void draw_unit_cube(int color) {
 }
 
 void display() {
+    auto &session = current_session();
+    display(session);
+}
+
+void display(GameSession &session) {
     // clear screen to background color
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -595,8 +636,9 @@ void display() {
     glLoadIdentity();
 
     // Specify camera transformation
-    glTranslatef(static_cast<GLfloat>(camera.x), static_cast<GLfloat>(camera.y),
-                 static_cast<GLfloat>(camera.z));
+    glTranslatef(static_cast<GLfloat>(session.camera.x),
+                 static_cast<GLfloat>(session.camera.y),
+                 static_cast<GLfloat>(session.camera.z));
 
     // Specify the lighting we'll be using for this app.  Note that
     // the lights can be transformed using the usual translate, rotate,
@@ -604,28 +646,29 @@ void display() {
     glPushMatrix();
 
     //////////////////// MOVING LIGHT!!!!! ////////////////////
-    glTranslatef(2.0F * std::sin(translate_light * 2.0F * PI / 360.0F), 0.0F, 0.0F);
+    glTranslatef(2.0F * std::sin(session.translate_light * 2.0F * PI / 360.0F), 0.0F,
+                 0.0F);
 
-    if (lighting) {
-        lighting_func();
+    if (session.lighting) {
+        lighting_func(session);
     }
 
     glPopMatrix();
 
-    glTranslatef(0.0, 0.0, -2.0);      // Move objects to viewing area.
-    glRotatef(angle_x, 1.0, 0.0, 0.0); // To allow rotation on the x-axis
-    glRotatef(angle_y, 0.0, 1.0, 0.0); // To allow rotation on the y-axis
+    glTranslatef(0.0, 0.0, -2.0);              // Move objects to viewing area.
+    glRotatef(session.angle_x, 1.0, 0.0, 0.0); // To allow rotation on the x-axis
+    glRotatef(session.angle_y, 0.0, 1.0, 0.0); // To allow rotation on the y-axis
     glPushMatrix();
 
     glScalef(1.0, 0.05, 1.0); // Flatten the Cube.
                               // It should look like a board now.
 
     // Specify material for the board we'll be drawing.
-    if (material) {
+    if (session.material) {
         material_func();
     }
 
-    draw_unit_cube(0);
+    draw_unit_cube(session, 0);
 
     glPopMatrix();
     glPushMatrix();
@@ -637,31 +680,34 @@ void display() {
     glTranslatef(0.0, 1.0, 0.0);      // The centre
 
     glPushMatrix();
-    apply_transformations(place_x, place_y, 0);
+    apply_transformations(static_cast<float>(session.place_x),
+                          static_cast<float>(session.place_y), 0);
     draw_sphere(0);
     glPopMatrix();
 
     for (int i = 0; i < 19; i++) {
         for (int j = 0; j < 19; j++) {
-            if (board_status[i][j] != 0) {
+            if (session.board_status[i][j] != 0) {
                 glPushMatrix();
-                apply_transformations(i - 9, j - 9, 0);
-                draw_sphere(board_status[i][j]);
+                apply_transformations(static_cast<float>(i - 9),
+                                      static_cast<float>(j - 9), 0);
+                draw_sphere(session.board_status[i][j]);
                 glPopMatrix();
             }
         }
     }
 
     // THE REMOVAL OF PIECE PORTION
-    if (!captured_groups.empty()) {
-        for (const auto &piece : captured_groups) {
-            jump_off(piece[0], piece[1], piece[2]);
+    if (!session.captured_groups.empty()) {
+        for (const auto &piece : session.captured_groups) {
+            jump_off(session, piece[0], piece[1], piece[2]);
         }
-        animation_time += (TIME_INCREMENT * captured_groups.size());
+        session.animation_time +=
+            (TIME_INCREMENT * static_cast<float>(session.captured_groups.size()));
     }
-    if (animation_time > 1) {
-        animation_time = 0;
-        captured_groups.clear();
+    if (session.animation_time > 1.0F) {
+        session.animation_time = 0.0F;
+        session.captured_groups.clear();
     }
 
     glPopMatrix();
@@ -705,13 +751,13 @@ void apply_transformation_general(float indx, float indy, float z) {
     glTranslatef(2 * indx, 10 * indy, 2 * z);
 }
 
-void set_images() {
+void set_images(GameSession &session) {
     ///////////////////// LOAD WOODEN TEXTURE /////////////////////
-    ilBindImage(image_ids[0]);
+    ilBindImage(session.image_ids[0]);
     ilLoadImage("images/wooden.jpg");
     ilConvertImage(IL_RGB, IL_UNSIGNED_SHORT);
 
-    glBindTexture(GL_TEXTURE_2D, textures[0]);
+    glBindTexture(GL_TEXTURE_2D, session.textures[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
@@ -723,11 +769,11 @@ void set_images() {
                  ilGetData());
 
     ///////////////////// LOAD CHECKERBOARD TEXTURE /////////////////
-    ilBindImage(image_ids[1]);
+    ilBindImage(session.image_ids[1]);
     ilLoadImage("images/checkerboard.png");
     ilConvertImage(IL_RGB, IL_UNSIGNED_SHORT);
 
-    glBindTexture(GL_TEXTURE_2D, textures[1]);
+    glBindTexture(GL_TEXTURE_2D, session.textures[1]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
@@ -745,53 +791,55 @@ void set_images() {
 /////////////////////////// BEHIND THE SCENES /////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-void init_board() {
-    for (auto &column : board_status) {
+void init_board(GameSession &session) {
+    for (auto &column : session.board_status) {
         column.fill(0);
     }
 }
 
-void clear_liberties() {
-    for (auto &column : liberties_status) {
+void clear_liberties(GameSession &session) {
+    for (auto &column : session.liberties_status) {
         column.fill(-1);
     }
 }
 
-auto check_liberties(int x, int y, int originx, int originy, int piece) -> int {
+auto check_liberties(GameSession &session, int x, int y, int originx, int originy,
+                     int piece) -> int {
     if (x < 0 || x > 18 || y < 0 || y > 18) {
         return 0;
     }
-    if (board_status[x][y] == 0) {
+    if (session.board_status[x][y] == 0) {
         return 1;
     }
-    if (board_status[x][y] != piece) {
+    if (session.board_status[x][y] != piece) {
         return 0;
     }
-    if (liberties_status[x][y] != -1) {
-        return liberties_status[x][y];
+    if (session.liberties_status[x][y] != -1) {
+        return session.liberties_status[x][y];
     }
     int direcx = x - originx;
     int direcy = y - originy;
-    if ((direcx >= 0 && check_liberties(x + 1, y, originx, originy, piece)) ||
-        (direcx <= 0 && check_liberties(x - 1, y, originx, originy, piece)) ||
-        (direcy >= 0 && check_liberties(x, y + 1, originx, originy, piece)) ||
-        (direcy <= 0 && check_liberties(x, y - 1, originx, originy, piece))) {
-        liberties_status[x][y] = 1;
+    if ((direcx >= 0 && check_liberties(session, x + 1, y, originx, originy, piece)) ||
+        (direcx <= 0 && check_liberties(session, x - 1, y, originx, originy, piece)) ||
+        (direcy >= 0 && check_liberties(session, x, y + 1, originx, originy, piece)) ||
+        (direcy <= 0 && check_liberties(session, x, y - 1, originx, originy, piece))) {
+        session.liberties_status[x][y] = 1;
     } else {
-        liberties_status[x][y] = 0;
+        session.liberties_status[x][y] = 0;
     }
-    return liberties_status[x][y];
+    return session.liberties_status[x][y];
 }
 
-void jump_off(int x0, int z0, int color) {
+void jump_off(GameSession &session, int x0, int z0, int color) {
     // For now, let's just assume they're all jumping to point (-4,0,-4)
 
     int x1 = -4;
-    float xt = x0 * (1 - animation_time) + x1 * animation_time;
+    float xt = x0 * (1 - session.animation_time) + x1 * session.animation_time;
     int y0 = 9;
-    float yt = -y0 * std::pow(animation_time, 2.0F) + y0 * animation_time + y0;
+    float yt =
+        -y0 * std::pow(session.animation_time, 2.0F) + y0 * session.animation_time + y0;
     int z1 = -4;
-    float zt = z0 * (1 - animation_time) + z1 * animation_time;
+    float zt = z0 * (1 - session.animation_time) + z1 * session.animation_time;
 
     glPushMatrix();
     apply_transformation_general((xt - 9), (yt - 9), -(zt - 9));
@@ -799,35 +847,38 @@ void jump_off(int x0, int z0, int color) {
 
     // Draw Thigh
     glPushMatrix();
-    if (animation_time < 0.1) {
-        glRotatef(-80 + 80 * std::sin(animation_time * 10.0F * PI), 1.0, 0.0, 1.0);
+    if (session.animation_time < 0.1F) {
+        glRotatef(-80 + 80 * std::sin(session.animation_time * 10.0F * PI), 1.0, 0.0,
+                  1.0);
     } else {
         glRotatef(-80, 1.0, 0.0, 1.0);
     }
     glScalef(2.0 / 5.0, 1.0, 2.0 / 5.0);
     glTranslatef(0.0, -1.0, 0.0);
-    draw_unit_cube(3);
+    draw_unit_cube(session, 3);
     glScalef(5.0 / 2.0, 1.0, 5.0 / 2.0);
 
     // Draw Shin
     glPushMatrix();
 
     glTranslatef(0, -0.8, 0);
-    if (animation_time < 0.1) {
-        glRotatef(90 - 90 * std::sin(animation_time * 10.0F * PI), 1.0, 0.0, 1.0);
+    if (session.animation_time < 0.1F) {
+        glRotatef(90 - 90 * std::sin(session.animation_time * 10.0F * PI), 1.0, 0.0,
+                  1.0);
     } else {
         glRotatef(90, 1.0, 0.0, 1.0);
     }
     glScalef(1.0 / 5.0, 1.0, 1.0 / 5.0);
     glTranslatef(0, -1.0, 0);
-    draw_unit_cube(4);
+    draw_unit_cube(session, 4);
     glScalef(5.0, 1.0, 5.0);
 
     // Draw Ankle
     glPushMatrix();
     glTranslatef(0, -1.0, 0);
-    if (animation_time < 0.1) {
-        glRotatef(-100 + 100 * std::sin(animation_time * 10.0F * PI), 1.0, 0.0, 1.0);
+    if (session.animation_time < 0.1F) {
+        glRotatef(-100 + 100 * std::sin(session.animation_time * 10.0F * PI), 1.0, 0.0,
+                  1.0);
     } else {
         glRotatef(-100, 1.0, 0.0, 1.0);
     }
@@ -840,9 +891,9 @@ void jump_off(int x0, int z0, int color) {
     glPopMatrix();
 }
 
-void remove_block(int x, int y, int piece) {
-    if (board_status[x][y] == piece) {
-        board_status[x][y] = 0;
+void remove_block(GameSession &session, int x, int y, int piece) {
+    if (session.board_status[x][y] == piece) {
+        session.board_status[x][y] = 0;
         std::cout << "Jump from ";
         std::cout << x;
         std::cout << y;
@@ -856,18 +907,18 @@ void remove_block(int x, int y, int piece) {
         rm_piece.push_back(x);
         rm_piece.push_back(y);
         rm_piece.push_back(piece);
-        captured_groups.push_back(rm_piece);
+        session.captured_groups.push_back(rm_piece);
 
-        remove_block(x - 1, y, piece);
-        remove_block(x + 1, y, piece);
-        remove_block(x, y - 1, piece);
-        remove_block(x, y + 1, piece);
+        remove_block(session, x - 1, y, piece);
+        remove_block(session, x + 1, y, piece);
+        remove_block(session, x, y - 1, piece);
+        remove_block(session, x, y + 1, piece);
     }
 }
 
-auto make_move(int x, int y, int piece) -> int {
-    board_status[x][y] = piece;
-    clear_liberties();
+auto make_move(GameSession &session, int x, int y, int piece) -> int {
+    session.board_status[x][y] = piece;
+    clear_liberties(session);
     int other;
     if (piece == 1) {
         other = 2;
@@ -875,46 +926,46 @@ auto make_move(int x, int y, int piece) -> int {
         other = 1;
     }
     int has_liberties = 0;
-    if (x > 0 && board_status[x - 1][y] != piece) {
+    if (x > 0 && session.board_status[x - 1][y] != piece) {
         if (piece == 0) {
             has_liberties = 1;
-        } else if (!check_liberties(x - 1, y, x - 1, y, other)) {
+        } else if (!check_liberties(session, x - 1, y, x - 1, y, other)) {
             has_liberties = 1;
-            remove_block(x - 1, y, other);
+            remove_block(session, x - 1, y, other);
         }
     }
-    if (x < 18 && board_status[x + 1][y] != piece) {
+    if (x < 18 && session.board_status[x + 1][y] != piece) {
         if (piece == 0) {
             has_liberties = 1;
-        } else if (!check_liberties(x + 1, y, x + 1, y, other)) {
+        } else if (!check_liberties(session, x + 1, y, x + 1, y, other)) {
             has_liberties = 1;
-            remove_block(x + 1, y, other);
+            remove_block(session, x + 1, y, other);
         }
     }
-    if (y > 0 && board_status[x][y - 1] != piece) {
+    if (y > 0 && session.board_status[x][y - 1] != piece) {
         if (piece == 0) {
             has_liberties = 1;
-        } else if (!check_liberties(x, y - 1, x, y - 1, other)) {
+        } else if (!check_liberties(session, x, y - 1, x, y - 1, other)) {
             has_liberties = 1;
-            remove_block(x, y - 1, other);
+            remove_block(session, x, y - 1, other);
         }
     }
-    if (y < 18 && board_status[x][y + 1] != piece) {
+    if (y < 18 && session.board_status[x][y + 1] != piece) {
         if (piece == 0) {
             has_liberties = 1;
-        } else if (!check_liberties(x, y + 1, x, y + 1, other)) {
+        } else if (!check_liberties(session, x, y + 1, x, y + 1, other)) {
             has_liberties = 1;
-            remove_block(x, y + 1, other);
+            remove_block(session, x, y + 1, other);
         }
     }
-    if (!has_liberties && !check_liberties(x, y, x, y, piece)) {
-        remove_block(x, y, piece);
+    if (!has_liberties && !check_liberties(session, x, y, x, y, piece)) {
+        remove_block(session, x, y, piece);
         return 0;
     }
     return 1;
 }
 
-void init() {
+void init(GameSession &session) {
     // select clearing color
     glClearColor(0.0, 0.0, 0.0, 0.0);
 
@@ -941,7 +992,7 @@ void init() {
     glEnable(GL_DEPTH_TEST); // enable depth testing
                              // glEnable(GL_TEXTURE_2D); // enable textures
 
-    set_images();
+    set_images(session);
 
-    init_board(); // Create the "Board"
+    init_board(session); // Create the "Board"
 }
