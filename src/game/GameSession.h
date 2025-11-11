@@ -9,6 +9,9 @@
 #include "game/Board.h"
 #include "game/GameState.h"
 
+struct Point;
+enum class Stone : std::uint8_t;
+
 constexpr int BOARD_SIZE = Board::SIZE;
 constexpr int BOARD_CENTER = Board::CENTER;
 

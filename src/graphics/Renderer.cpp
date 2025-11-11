@@ -1,6 +1,7 @@
 #include "graphics/Renderer.h"
 
 #include <cmath>
+#include <cstddef>
 #include <numbers>
 
 #include <GL/freeglut_std.h>
@@ -157,27 +158,32 @@ void display(GameSession &session) {
     graphics::mesh::draw_sphere(0);
     glPopMatrix();
 
-    const auto &stones = session.board.stones();
-    for (int i = 0; i < BOARD_SIZE; i++) {
-        for (int j = 0; j < BOARD_SIZE; j++) {
-            if (stones[i][j] != 0) {
-                glPushMatrix();
-                graphics::mesh::apply_transformations(
-                    static_cast<float>(i - BOARD_CENTER),
-                    static_cast<float>(j - BOARD_CENTER), 0.0F);
-                graphics::mesh::draw_sphere(stones[i][j]);
-                glPopMatrix();
-            }
+    session.board.for_each_stone([&](Point point, Stone stone) {
+        if (stone == Stone::Empty) {
+            return;
         }
-    }
+
+        glPushMatrix();
+        graphics::mesh::apply_transformations(static_cast<float>(point.x),
+                                              static_cast<float>(point.y), 0.0F);
+        graphics::mesh::draw_sphere(static_cast<int>(stone));
+        glPopMatrix();
+    });
 
     const auto &captured = session.board.captured_groups();
     if (!captured.empty()) {
-        for (const auto &piece : captured) {
-            jump_off(session, piece[0], piece[1], piece[2]);
+        std::size_t captured_count = 0;
+        for (const auto &group : captured) {
+            for (const auto &captured_stone : group) {
+                const int board_x = captured_stone.location.x + BOARD_CENTER;
+                const int board_y = captured_stone.location.y + BOARD_CENTER;
+                jump_off(session, board_x, board_y,
+                         static_cast<int>(captured_stone.color));
+                ++captured_count;
+            }
         }
         session.state.advance_animation(TIME_INCREMENT *
-                                        static_cast<float>(captured.size()));
+                                        static_cast<float>(captured_count));
     }
     if (session.state.animation_time() > 1.0F) {
         session.state.reset_animation();

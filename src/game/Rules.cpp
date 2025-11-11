@@ -4,59 +4,74 @@
 #include <iostream>
 #include <utility>
 
+#include "game/Board.h"
 #include "game/GameSession.h"
 
 namespace {
 
-void remove_block(GameSession &session, int x, int y, int piece) {
-    if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) {
-        return;
-    }
-    auto &stones = session.board.stones();
-    if (stones[x][y] != piece) {
+void collect_block(GameSession &session, Point point, Stone target_color,
+                   Board::CaptureGroup &removed_group) {
+    if (!Board::is_on_board(point)) {
         return;
     }
 
-    stones[x][y] = 0;
-    std::cout << "Jump from " << x << y << '\n';
+    if (session.board.stone_at(point) != target_color) {
+        return;
+    }
 
-    Board::CaptureGroup rm_piece{x, y, piece};
-    session.board.add_captured_group(std::move(rm_piece));
+    session.board.remove_stone(point);
+    std::cout << "Jump from " << point.x << point.y << '\n';
 
-    remove_block(session, x - 1, y, piece);
-    remove_block(session, x + 1, y, piece);
-    remove_block(session, x, y - 1, piece);
-    remove_block(session, x, y + 1, piece);
+    removed_group.emplace_back(point, target_color);
+
+    collect_block(session, Point{point.x - 1, point.y}, target_color, removed_group);
+    collect_block(session, Point{point.x + 1, point.y}, target_color, removed_group);
+    collect_block(session, Point{point.x, point.y - 1}, target_color, removed_group);
+    collect_block(session, Point{point.x, point.y + 1}, target_color, removed_group);
 }
 
-auto check_liberties(GameSession &session, int x, int y, int originx, int originy,
-                     int piece) -> int {
-    if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) {
+void remove_block(GameSession &session, Point point, Stone target_color) {
+    Board::CaptureGroup removed{};
+    collect_block(session, point, target_color, removed);
+    if (!removed.empty()) {
+        session.board.add_captured_group(std::move(removed));
+    }
+}
+
+auto check_liberties(GameSession &session, Point point, Point origin,
+                     Stone target_color) -> int {
+    if (!Board::is_on_board(point)) {
         return 0;
-    }
-    auto &stones = session.board.stones();
-    if (stones[x][y] == 0) {
-        return 1;
-    }
-    if (stones[x][y] != piece) {
-        return 0;
-    }
-    auto &liberties = session.board.liberties();
-    if (liberties[x][y] != -1) {
-        return liberties[x][y];
     }
 
-    const int direcx = x - originx;
-    const int direcy = y - originy;
-    if ((direcx >= 0 && check_liberties(session, x + 1, y, originx, originy, piece)) ||
-        (direcx <= 0 && check_liberties(session, x - 1, y, originx, originy, piece)) ||
-        (direcy >= 0 && check_liberties(session, x, y + 1, originx, originy, piece)) ||
-        (direcy <= 0 && check_liberties(session, x, y - 1, originx, originy, piece))) {
-        liberties[x][y] = 1;
-    } else {
-        liberties[x][y] = 0;
+    const auto stone = session.board.stone_at(point);
+    if (is_empty(stone)) {
+        return 1;
     }
-    return liberties[x][y];
+    if (stone != target_color) {
+        return 0;
+    }
+
+    auto &liberty_value = session.board.mutable_liberty(point);
+    if (liberty_value != -1) {
+        return liberty_value;
+    }
+
+    const int direcx = point.x - origin.x;
+    const int direcy = point.y - origin.y;
+    if ((direcx >= 0 &&
+         check_liberties(session, Point{point.x + 1, point.y}, origin, target_color)) ||
+        (direcx <= 0 &&
+         check_liberties(session, Point{point.x - 1, point.y}, origin, target_color)) ||
+        (direcy >= 0 &&
+         check_liberties(session, Point{point.x, point.y + 1}, origin, target_color)) ||
+        (direcy <= 0 &&
+         check_liberties(session, Point{point.x, point.y - 1}, origin, target_color))) {
+        liberty_value = 1;
+    } else {
+        liberty_value = 0;
+    }
+    return liberty_value;
 }
 
 } // namespace
@@ -65,42 +80,50 @@ namespace rules {
 
 void init_board(GameSession &session) { session.board.clear(); }
 
-auto make_move(GameSession &session, int x, int y, int piece) -> int {
+auto make_move(GameSession &session, Point move_point, Stone stone_color) -> int {
     auto &board = session.board;
-    auto &stones = board.stones();
 
-    stones[x][y] = piece;
+    if (!Board::is_on_board(move_point)) {
+        return 0;
+    }
+
+    if (!board.is_empty(move_point)) {
+        return 0;
+    }
+
+    board.place_stone(move_point, stone_color);
     board.clear_liberties();
 
-    const int other = piece == 1 ? 2 : 1;
+    const Stone opponent = stone_color == Stone::Black ? Stone::White : Stone::Black;
     int has_liberties = 0;
 
-    const std::array<std::pair<int, int>, 4> neighbors{{
-        {x - 1, y},
-        {x + 1, y},
-        {x, y - 1},
-        {x, y + 1},
+    const std::array<Point, 4> neighbors{{
+        Point{move_point.x - 1, move_point.y},
+        Point{move_point.x + 1, move_point.y},
+        Point{move_point.x, move_point.y - 1},
+        Point{move_point.x, move_point.y + 1},
     }};
 
-    for (const auto &[nx, ny] : neighbors) {
-        if (nx < 0 || nx >= BOARD_SIZE || ny < 0 || ny >= BOARD_SIZE) {
+    for (const auto &neighbor : neighbors) {
+        if (!Board::is_on_board(neighbor)) {
             continue;
         }
 
-        if (stones[nx][ny] == piece) {
+        if (board.stone_at(neighbor) == stone_color) {
             continue;
         }
 
-        if (piece == 0) {
+        if (stone_color == Stone::Empty) {
             has_liberties = 1;
-        } else if (!check_liberties(session, nx, ny, nx, ny, other)) {
+        } else if (!check_liberties(session, neighbor, neighbor, opponent)) {
             has_liberties = 1;
-            remove_block(session, nx, ny, other);
+            remove_block(session, neighbor, opponent);
         }
     }
 
-    if (!has_liberties && !check_liberties(session, x, y, x, y, piece)) {
-        remove_block(session, x, y, piece);
+    if (!has_liberties &&
+        !check_liberties(session, move_point, move_point, stone_color)) {
+        remove_block(session, move_point, stone_color);
         return 0;
     }
 

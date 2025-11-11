@@ -5,6 +5,7 @@
 
 #include <iostream>
 
+#include "game/Board.h"
 #include "game/GameSession.h"
 #include "game/Rules.h"
 
@@ -141,16 +142,22 @@ void keyboard(GameSession &session, unsigned char key, [[maybe_unused]] int x,
         break;
 
     case '\r': {
-        const auto &stones = session.board.stones();
         const int cursor_x = state.cursor_x();
         const int cursor_y = state.cursor_y();
-        if (stones[cursor_x + BOARD_CENTER][cursor_y + BOARD_CENTER] != 0) {
+        const Point cursor_point{cursor_x, cursor_y};
+
+        if (!Board::is_on_board(cursor_point)) {
+            std::cout << "Cursor is out of bounds; cannot place a stone.\n";
+            break;
+        }
+
+        if (!session.board.is_empty(cursor_point)) {
             std::cout << "YOU CAN'T PLACE A PIECE HERE BECAUSE THERE ALREADY IS A "
                       << "PIECE HERE!!!\n";
         } else {
             std::cout << "ENTER KEY PRESSED!!!\n";
-            rules::make_move(session, cursor_x + BOARD_CENTER, cursor_y + BOARD_CENTER,
-                             state.current_player());
+            const auto current_stone = static_cast<Stone>(state.current_player());
+            rules::make_move(session, cursor_point, current_stone);
             state.advance_turn();
         }
         break;
