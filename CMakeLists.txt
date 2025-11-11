@@ -14,6 +14,8 @@ set(SOURCE_FILES
   src/game/GameState.cpp
   src/game/Board.cpp
   src/game/Rules.cpp
+  src/graphics/Lights.cpp
+  src/graphics/Meshes.cpp
   src/graphics/Renderer.cpp
   src/input/InputRouter.cpp
 ) # Add main.cpp file of project root directory as source file

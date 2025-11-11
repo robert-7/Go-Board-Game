@@ -1,9 +1,7 @@
 #include "graphics/Renderer.h"
 
-#include <array>
 #include <cmath>
 #include <numbers>
-#include <unistd.h>
 
 #include <GL/freeglut_std.h>
 #include <GL/gl.h>
@@ -12,6 +10,8 @@
 #include <IL/il.h>
 
 #include "game/GameSession.h"
+#include "graphics/Lights.h"
+#include "graphics/Meshes.h"
 
 namespace {
 
@@ -21,189 +21,6 @@ constexpr float PI = std::numbers::pi_v<float>;
 #else
 constexpr float PI = 3.14159265358979323846F; // NOLINT(modernize-use-std-numbers)
 #endif
-
-void lighting_func(const GameSession &session) {
-    const std::array<GLfloat, 4> light_position{0.0F, 0.0F, -0.5F, 1.0F};
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position.data());
-
-    const std::array<GLfloat, 4> light_strength{2.0F, 2.0F, 2.0F, 2.0F};
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_strength.data());
-    glLightfv(GL_LIGHT0, GL_SPECULAR, light_strength.data());
-
-    GLfloat spread = 90.0F - 90.0F * session.state.animation_time();
-    glLightfv(GL_LIGHT0, GL_SPOT_CUTOFF, &spread);
-
-    glEnable(GL_LIGHT0);
-}
-
-void material_func() {
-    const std::array<GLfloat, 4> material_diffuse{0.5F, 0.5F, 1.0F, 1.0F};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, material_diffuse.data());
-
-    const std::array<GLfloat, 4> material_specular{1.0F, 1.0F, 1.0F, 1.0F};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, material_specular.data());
-
-    const std::array<GLfloat, 1> material_shininess{100.0F};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, material_shininess.data());
-}
-
-void draw_sphere(int color) {
-    const std::array<GLfloat, 4> color_none{0.0F, 0.0F, 0.0F, 0.0F};
-
-    if (color == 0) {
-        const std::array<GLfloat, 4> color_red{1.0F, 0.0F, 0.0F, 0.0F};
-        glColor4fv(color_red.data());
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_red.data());
-        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none.data());
-    }
-
-    if (color == 1) {
-        const std::array<GLfloat, 4> color_white{1.0F, 1.0F, 1.0F, 1.0F};
-        glColor4fv(color_white.data());
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_white.data());
-        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none.data());
-    }
-
-    if (color == 2) {
-        const std::array<GLfloat, 4> color_black{0.0F, 0.0F, 0.0F, 0.0F};
-        glColor4fv(color_black.data());
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_black.data());
-        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none.data());
-    }
-
-    if (color == 3) {
-        const std::array<GLfloat, 4> color_green{0.0F, 0.0F, 1.0F, 0.0F};
-        glColor4fv(color_green.data());
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_green.data());
-        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none.data());
-    }
-
-    if (color == 4) {
-        const std::array<GLfloat, 4> color_blue{0.0F, 1.0F, 0.0F, 0.0F};
-        glColor4fv(color_blue.data());
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_blue.data());
-        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none.data());
-    }
-
-    glBegin(GL_TRIANGLES);
-    GLUquadricObj *quadratic = gluNewQuadric();
-    gluQuadricNormals(quadratic, GLU_SMOOTH);
-    gluQuadricTexture(quadratic, GL_TRUE);
-
-    gluSphere(quadratic, 1.0F, 32, 32);
-    glEnd();
-}
-
-void draw_unit_cube(GameSession &session, int color) {
-    if (color == 0) {
-        glBindTexture(GL_TEXTURE_2D, session.textures[0]);
-    } else if (color == 3) {
-        const std::array<GLfloat, 4> color_none{0.0F, 0.0F, 0.0F, 0.0F};
-        const std::array<GLfloat, 4> color_green{0.0F, 0.0F, 1.0F, 0.0F};
-        glColor4fv(color_green.data());
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_green.data());
-        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none.data());
-    } else if (color == 4) {
-        const std::array<GLfloat, 4> color_none{0.0F, 0.0F, 0.0F, 0.0F};
-        const std::array<GLfloat, 4> color_blue{0.0F, 1.0F, 0.0F, 0.0F};
-        glColor4fv(color_blue.data());
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, color_blue.data());
-        glMaterialfv(GL_FRONT, GL_SPECULAR, color_none.data());
-    }
-
-    glBegin(GL_QUADS);
-
-    glNormal3f(0.0F, 0.0F, 2.0F);
-    glTexCoord2f(0.0F, 0.0F);
-    glVertex3f(-1.0F, -1.0F, 1.0F);
-    glTexCoord2f(1.0F, 0.0F);
-    glVertex3f(1.0F, -1.0F, 1.0F);
-    glTexCoord2f(1.0F, 1.0F);
-    glVertex3f(1.0F, 1.0F, 1.0F);
-    glTexCoord2f(0.0F, 1.0F);
-    glVertex3f(-1.0F, 1.0F, 1.0F);
-
-    glNormal3f(0.0F, 0.0F, -2.0F);
-    glTexCoord2f(1.0F, 0.0F);
-    glVertex3f(-1.0F, -1.0F, -1.0F);
-    glTexCoord2f(1.0F, 1.0F);
-    glVertex3f(-1.0F, 1.0F, -1.0F);
-    glTexCoord2f(0.0F, 1.0F);
-    glVertex3f(1.0F, 1.0F, -1.0F);
-    glTexCoord2f(0.0F, 0.0F);
-    glVertex3f(1.0F, -1.0F, -1.0F);
-
-    glNormal3f(0.0F, -2.0F, 0.0F);
-    glTexCoord2f(1.0F, 1.0F);
-    glVertex3f(-1.0F, -1.0F, -1.0F);
-    glTexCoord2f(0.0F, 1.0F);
-    glVertex3f(1.0F, -1.0F, -1.0F);
-    glTexCoord2f(0.0F, 0.0F);
-    glVertex3f(1.0F, -1.0F, 1.0F);
-    glTexCoord2f(1.0F, 0.0F);
-    glVertex3f(-1.0F, -1.0F, 1.0F);
-
-    glNormal3f(2.0F, 0.0F, 0.0F);
-    glTexCoord2f(1.0F, 0.0F);
-    glVertex3f(1.0F, -1.0F, -1.0F);
-    glTexCoord2f(1.0F, 1.0F);
-    glVertex3f(1.0F, 1.0F, -1.0F);
-    glTexCoord2f(0.0F, 1.0F);
-    glVertex3f(1.0F, 1.0F, 1.0F);
-    glTexCoord2f(0.0F, 0.0F);
-    glVertex3f(1.0F, -1.0F, 1.0F);
-
-    glNormal3f(-2.0F, 0.0F, 0.0F);
-    glTexCoord2f(0.0F, 0.0F);
-    glVertex3f(-1.0F, -1.0F, -1.0F);
-    glTexCoord2f(1.0F, 0.0F);
-    glVertex3f(-1.0F, -1.0F, 1.0F);
-    glTexCoord2f(1.0F, 1.0F);
-    glVertex3f(-1.0F, 1.0F, 1.0F);
-    glTexCoord2f(0.0F, 1.0F);
-    glVertex3f(-1.0F, 1.0F, -1.0F);
-
-    if (color == 0) {
-        glEnd();
-
-        glBindTexture(GL_TEXTURE_2D, session.textures[1]);
-        glBegin(GL_QUADS);
-    }
-
-    glNormal3f(0.0F, 2.0F, 0.0F);
-    glTexCoord2f(0.0F, 1.0F);
-    glVertex3f(-1.0F, 1.0F, -1.0F);
-    glTexCoord2f(0.0F, 0.0F);
-    glVertex3f(-1.0F, 1.0F, 1.0F);
-    glTexCoord2f(1.0F, 0.0F);
-    glVertex3f(1.0F, 1.0F, 1.0F);
-    glTexCoord2f(1.0F, 1.0F);
-    glVertex3f(1.0F, 1.0F, -1.0F);
-
-    glEnd();
-
-    usleep(DEFAULT_SLEEP_TIME);
-}
-
-void apply_transformations(float indx, float indy, [[maybe_unused]] float z) {
-    const int steps_x = static_cast<int>(std::round(std::fabs(indx)));
-    const int steps_y = static_cast<int>(std::round(std::fabs(indy)));
-
-    const float step_x = indx < 0 ? -2.0F : 2.0F;
-    const float step_y = indy < 0 ? 2.0F : -2.0F;
-
-    for (int i = 0; i < steps_x; i++) {
-        glTranslatef(step_x, 0.0F, 0.0F);
-    }
-
-    for (int i = 0; i < steps_y; i++) {
-        glTranslatef(0.0F, 0.0F, step_y);
-    }
-}
-
-void apply_transformation_general(float indx, float indy, float z) {
-    glTranslatef(2 * indx, 10 * indy, 2 * z);
-}
 
 void set_images(GameSession &session) {
     ilBindImage(session.image_ids[0]);
@@ -253,8 +70,8 @@ void jump_off(GameSession &session, int x0, int z0, int color) {
     const float zt = z0 * (1 - animation) + static_cast<float>(z1) * animation;
 
     glPushMatrix();
-    apply_transformation_general((xt - 9), (yt - 9), -(zt - 9));
-    draw_sphere(color);
+    graphics::mesh::apply_transformation_general((xt - 9), (yt - 9), -(zt - 9));
+    graphics::mesh::draw_sphere(color);
 
     glPushMatrix();
     const float thigh_angle =
@@ -262,7 +79,7 @@ void jump_off(GameSession &session, int x0, int z0, int color) {
     glRotatef(thigh_angle, 1.0F, 0.0F, 1.0F);
     glScalef(2.0F / 5.0F, 1.0F, 2.0F / 5.0F);
     glTranslatef(0.0F, -1.0F, 0.0F);
-    draw_unit_cube(session, 3);
+    graphics::mesh::draw_unit_cube(session, 3);
     glScalef(5.0F / 2.0F, 1.0F, 5.0F / 2.0F);
 
     glPushMatrix();
@@ -273,7 +90,7 @@ void jump_off(GameSession &session, int x0, int z0, int color) {
     glRotatef(shin_angle, 1.0F, 0.0F, 1.0F);
     glScalef(1.0F / 5.0F, 1.0F, 1.0F / 5.0F);
     glTranslatef(0.0F, -1.0F, 0.0F);
-    draw_unit_cube(session, 4);
+    graphics::mesh::draw_unit_cube(session, 4);
     glScalef(5.0F, 1.0F, 5.0F);
 
     glPushMatrix();
@@ -283,7 +100,7 @@ void jump_off(GameSession &session, int x0, int z0, int color) {
     glRotatef(ankle_angle, 1.0F, 0.0F, 1.0F);
     glScalef(1.0F / 2.0F, 2.0F / 3.0F, 1.0F / 2.0F);
     glTranslatef(0.0F, -1.0F, 0.0F);
-    draw_sphere(0);
+    graphics::mesh::draw_sphere(0);
     glPopMatrix();
     glPopMatrix();
     glPopMatrix();
@@ -306,7 +123,7 @@ void display(GameSession &session) {
     glTranslatef(2.0F * light_offset, 0.0F, 0.0F);
 
     if (session.lighting) {
-        lighting_func(session);
+        graphics::lights::apply(session);
     }
 
     glPopMatrix();
@@ -319,10 +136,10 @@ void display(GameSession &session) {
     glScalef(1.0F, 0.05F, 1.0F);
 
     if (session.material) {
-        material_func();
+        graphics::lights::apply_material();
     }
 
-    draw_unit_cube(session, 0);
+    graphics::mesh::draw_unit_cube(session, 0);
 
     glPopMatrix();
     glPushMatrix();
@@ -335,9 +152,9 @@ void display(GameSession &session) {
     glPushMatrix();
     const int cursor_x = session.state.cursor_x();
     const int cursor_y = session.state.cursor_y();
-    apply_transformations(static_cast<float>(cursor_x), static_cast<float>(cursor_y),
-                          0.0F);
-    draw_sphere(0);
+    graphics::mesh::apply_transformations(static_cast<float>(cursor_x),
+                                          static_cast<float>(cursor_y), 0.0F);
+    graphics::mesh::draw_sphere(0);
     glPopMatrix();
 
     const auto &stones = session.board.stones();
@@ -345,9 +162,10 @@ void display(GameSession &session) {
         for (int j = 0; j < BOARD_SIZE; j++) {
             if (stones[i][j] != 0) {
                 glPushMatrix();
-                apply_transformations(static_cast<float>(i - BOARD_CENTER),
-                                      static_cast<float>(j - BOARD_CENTER), 0.0F);
-                draw_sphere(stones[i][j]);
+                graphics::mesh::apply_transformations(
+                    static_cast<float>(i - BOARD_CENTER),
+                    static_cast<float>(j - BOARD_CENTER), 0.0F);
+                graphics::mesh::draw_sphere(stones[i][j]);
                 glPopMatrix();
             }
         }
