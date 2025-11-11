@@ -1,77 +1,26 @@
 #include "game/Rules.h"
 
 #include <array>
-#include <iostream>
 #include <utility>
+#include <vector>
 
 #include "game/Board.h"
 #include "game/GameSession.h"
+#include "game/GroupAnalyzer.h"
 
 namespace {
 
-void collect_block(GameSession &session, Point point, Stone target_color,
-                   Board::CaptureGroup &removed_group) {
-    if (!Board::is_on_board(point)) {
-        return;
-    }
-
-    if (session.board.stone_at(point) != target_color) {
-        return;
-    }
-
-    session.board.remove_stone(point);
-    std::cout << "Jump from " << point.x << point.y << '\n';
-
-    removed_group.emplace_back(point, target_color);
-
-    collect_block(session, Point{point.x - 1, point.y}, target_color, removed_group);
-    collect_block(session, Point{point.x + 1, point.y}, target_color, removed_group);
-    collect_block(session, Point{point.x, point.y - 1}, target_color, removed_group);
-    collect_block(session, Point{point.x, point.y + 1}, target_color, removed_group);
+auto neighbors(Point point) -> std::array<Point, 4> {
+    return {Point{point.x - 1, point.y}, Point{point.x + 1, point.y},
+            Point{point.x, point.y - 1}, Point{point.x, point.y + 1}};
 }
 
-void remove_block(GameSession &session, Point point, Stone target_color) {
-    Board::CaptureGroup removed{};
-    collect_block(session, point, target_color, removed);
-    if (!removed.empty()) {
-        session.board.add_captured_group(std::move(removed));
+void restore_captures(Board &board, const std::vector<Board::CaptureGroup> &captures) {
+    for (const auto &group : captures) {
+        for (const auto &captured : group) {
+            board.place_stone(captured.location, captured.color);
+        }
     }
-}
-
-auto check_liberties(GameSession &session, Point point, Point origin,
-                     Stone target_color) -> int {
-    if (!Board::is_on_board(point)) {
-        return 0;
-    }
-
-    const auto stone = session.board.stone_at(point);
-    if (is_empty(stone)) {
-        return 1;
-    }
-    if (stone != target_color) {
-        return 0;
-    }
-
-    auto &liberty_value = session.board.mutable_liberty(point);
-    if (liberty_value != -1) {
-        return liberty_value;
-    }
-
-    const int direcx = point.x - origin.x;
-    const int direcy = point.y - origin.y;
-    if ((direcx >= 0 &&
-         check_liberties(session, Point{point.x + 1, point.y}, origin, target_color)) ||
-        (direcx <= 0 &&
-         check_liberties(session, Point{point.x - 1, point.y}, origin, target_color)) ||
-        (direcy >= 0 &&
-         check_liberties(session, Point{point.x, point.y + 1}, origin, target_color)) ||
-        (direcy <= 0 &&
-         check_liberties(session, Point{point.x, point.y - 1}, origin, target_color))) {
-        liberty_value = 1;
-    } else {
-        liberty_value = 0;
-    }
-    return liberty_value;
 }
 
 } // namespace
@@ -92,44 +41,48 @@ auto make_move(GameSession &session, Point move_point, Stone stone_color) -> int
     }
 
     board.place_stone(move_point, stone_color);
-    board.clear_liberties();
 
     const Stone opponent = stone_color == Stone::Black ? Stone::White : Stone::Black;
-    int has_liberties = 0;
 
-    const std::array<Point, 4> neighbors{{
-        Point{move_point.x - 1, move_point.y},
-        Point{move_point.x + 1, move_point.y},
-        Point{move_point.x, move_point.y - 1},
-        Point{move_point.x, move_point.y + 1},
-    }};
+    std::vector<Board::CaptureGroup> captured_groups;
+    GroupAnalyzer analyzer(board);
 
-    for (const auto &neighbor : neighbors) {
+    for (const auto &neighbor : neighbors(move_point)) {
         if (!Board::is_on_board(neighbor)) {
             continue;
         }
 
-        if (board.stone_at(neighbor) == stone_color) {
+        if (board.stone_at(neighbor) != opponent) {
             continue;
         }
 
-        if (stone_color == Stone::Empty) {
-            has_liberties = 1;
-        } else if (!check_liberties(session, neighbor, neighbor, opponent)) {
-            has_liberties = 1;
-            remove_block(session, neighbor, opponent);
+        const auto analysis = analyzer.analyze(neighbor);
+        if (!analysis.has_value() || analysis->has_liberties()) {
+            continue;
         }
+
+        Board::CaptureGroup removed;
+        removed.reserve(analysis->stones.size());
+        for (const auto &stone_point : analysis->stones) {
+            board.remove_stone(stone_point);
+            removed.emplace_back(stone_point, opponent);
+        }
+        captured_groups.push_back(std::move(removed));
     }
 
-    if (!has_liberties &&
-        !check_liberties(session, move_point, move_point, stone_color)) {
-        auto &captures = board.captured_groups();
-        const auto previous_capture_count = captures.size();
-        remove_block(session, move_point, stone_color);
-        while (captures.size() > previous_capture_count) {
-            captures.pop_back();
-        }
+    GroupAnalyzer self_analyzer(board);
+    const auto own_group = self_analyzer.analyze(move_point);
+
+    const bool move_has_liberty = own_group.has_value() && own_group->has_liberties();
+
+    if (!move_has_liberty && captured_groups.empty()) {
+        board.remove_stone(move_point);
+        restore_captures(board, captured_groups);
         return 0;
+    }
+
+    for (auto &group : captured_groups) {
+        board.add_captured_group(std::move(group));
     }
 
     return 1;

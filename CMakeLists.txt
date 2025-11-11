@@ -13,6 +13,7 @@ set(SOURCE_FILES
   src/game/GameSession.cpp
   src/game/GameState.cpp
   src/game/Board.cpp
+  src/game/GroupAnalyzer.cpp
   src/game/Rules.cpp
   src/graphics/Lights.cpp
   src/graphics/Meshes.cpp
@@ -43,6 +44,7 @@ add_executable(go_tests
   tests/test_placeholder.cpp
   tests/rules_tests.cpp
   src/game/Board.cpp
+  src/game/GroupAnalyzer.cpp
   src/game/Rules.cpp
 )
 target_link_libraries(go_tests PRIVATE GTest::gtest_main)
