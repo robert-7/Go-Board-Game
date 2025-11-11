@@ -6,9 +6,7 @@
 #include <iostream>
 
 #include "game/GameSession.h"
-
-void init_board(GameSession &session);
-auto make_move(GameSession &session, int x, int y, int piece) -> int;
+#include "game/Rules.h"
 
 namespace {
 
@@ -148,8 +146,8 @@ void keyboard(GameSession &session, unsigned char key, [[maybe_unused]] int x,
                       << "PIECE HERE!!!\n";
         } else {
             std::cout << "ENTER KEY PRESSED!!!\n";
-            make_move(session, session.place_x + BOARD_CENTER,
-                      session.place_y + BOARD_CENTER, session.stone_color);
+            rules::make_move(session, session.place_x + BOARD_CENTER,
+                             session.place_y + BOARD_CENTER, session.stone_color);
             if (session.stone_color == 1) {
                 session.stone_color = 2;
             } else {
@@ -174,7 +172,7 @@ void keyboard(GameSession &session, unsigned char key, [[maybe_unused]] int x,
     case 'Y':
         if (session.restart_option) {
             std::cout << "You pressed 'y'. The game has been restarted.\n";
-            init_board(session);
+            rules::init_board(session);
             session.stone_color = 1;
         }
         break;
