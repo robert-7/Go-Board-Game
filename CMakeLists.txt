@@ -11,6 +11,7 @@ include_directories(src)
 set(SOURCE_FILES
   main.cpp
   src/game/GameSession.cpp
+  src/graphics/Renderer.cpp
   src/input/InputRouter.cpp
 ) # Add main.cpp file of project root directory as source file
 add_executable(main ${SOURCE_FILES}) # Add executable target with source files listed in SOURCE_FILES variable
