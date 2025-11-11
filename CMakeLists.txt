@@ -6,5 +6,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)  # Fail configuration if the compiler can't 
 set(CMAKE_CXX_EXTENSIONS OFF)        # Use -std=c++20, not compiler-specific gnu++20
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Generate compile_commands.json for tooling
 
-set(SOURCE_FILES main.cpp)                     # Add main.cpp file of project root directory as source file
-add_executable(simple_example ${SOURCE_FILES}) # Add executable target with source files listed in SOURCE_FILES variable
+include_directories(src)
+
+set(SOURCE_FILES main.cpp src/game/GameSession.cpp) # Add main.cpp file of project root directory as source file
+add_executable(main ${SOURCE_FILES}) # Add executable target with source files listed in SOURCE_FILES variable
+
+find_package(OpenGL REQUIRED)
+find_package(GLUT REQUIRED)
+find_package(DevIL REQUIRED)
+
+target_link_libraries(main PUBLIC ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${IL_LIBRARIES} ${ILU_LIBRARIES} ${ILUT_LIBRARIES})
