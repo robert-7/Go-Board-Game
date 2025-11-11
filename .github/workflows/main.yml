@@ -1,4 +1,4 @@
-name: linting
+name: validations
 
 # Triggers the workflow on push or pull request events but only for the main branch
 on:
@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  pre-commit:
+  linting:
     name: pre-commit
     runs-on: ubuntu-latest
     steps:
@@ -46,3 +46,19 @@ jobs:
         uses: pre-commit/action@v3.0.1
         with:
           extra_args: --all-files
+
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: ./scripts/install_dependencies.sh
+
+      - name: Build
+        run: make build
+
+      - name: Run tests
+        run: make test

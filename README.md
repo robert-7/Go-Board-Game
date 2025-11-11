@@ -32,7 +32,6 @@ git clone https://github.com/robert-7/Go-Board-Game.git && cd Go-Board-Game
 
 ## Building and Running
 
-Building requires the OpenGL and DevIL libraries imported.
 To build and run the binary, simply run `make && ./main`.
 To clean up, run `make clean`.
 

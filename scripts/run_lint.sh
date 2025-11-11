@@ -13,15 +13,34 @@ cmake -S "${REPO_ROOT}" \
 	-DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
 	-DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic"
 
+# Find all C++ source files, excluding the build directory, and pass them to the linters.
+mapfile -t SOURCE_FILES < <(find "${REPO_ROOT}" -path "${BUILD_DIR}" -prune -o -type f -name "*.cpp" -print)
+
+if [[ ${#SOURCE_FILES[@]} -eq 0 ]]; then
+	echo "No C++ source files found for linting." >&2
+	exit 0
+fi
+
 # Style check with clang-format; fails if formatting differs from .clang-format.
-clang-format --dry-run --Werror "${REPO_ROOT}/main.cpp"
+echo "Checking formatting with clang-format..."
+clang-format --dry-run --Werror "${SOURCE_FILES[@]}"
 
 # Static analysis with clang-tidy; uses the compile database for accurate diagnostics.
-clang-tidy "${REPO_ROOT}/main.cpp" -p "${BUILD_DIR}"
+echo "Running static analysis with clang-tidy..."
+clang-tidy -p "${BUILD_DIR}" "${SOURCE_FILES[@]}"
 
 # Include-What-You-Use to enforce proper includes; uses the compile database via the helper tool.
-iwyu_tool -p "${BUILD_DIR}" "${REPO_ROOT}/main.cpp"
+echo "Checking includes with iwyu_tool..."
+# The iwyu_tool script doesn't directly accept multiple files, so we loop.
+for file in "${SOURCE_FILES[@]}"; do
+    iwyu_tool -p "${BUILD_DIR}" "$file"
+done
 
 # Cross-check the same sources with cppcheck for complementary warnings.
 # ignore normalCheckLevelMaxBranches to reduce noise
-cppcheck --project="${BUILD_DIR}/compile_commands.json" --enable=warning,style,performance --error-exitcode=1 --suppress=normalCheckLevelMaxBranches
+cppcheck --project="${BUILD_DIR}/compile_commands.json" \
+	--enable=warning,style,performance \
+	--error-exitcode=1 \
+	--suppress=normalCheckLevelMaxBranches \
+	--suppress="*:${BUILD_DIR}/_deps/*" \
+	--suppress="*:${BUILD_DIR}/CMakeFiles/*"

@@ -1,18 +1,26 @@
-SHELL := /bin/bash
+# Makefile to drive CMake build
+#
 
-CC := gcc
-TARGET := main
-SRCS := main.cpp
-# `-lstdc++` was added to resolve [this issue](https://stackoverflow.com/questions/33263288/libstdc-dso-missing-from-command-line)
-# `-lm` was added to resolve [this issue](https://stackoverflow.com/questions/16006145/ld-undefined-reference-to-symbol-log2glibc-2-2-5)
-LIBS := -lGL -lGLU -lglut -lIL -lILU -lILUT -lstdc++ -lm
+# Phony targets
+.PHONY: all clean test build
 
-all: $(TARGET)
+# Default target
+all: main
 
-$(TARGET): $(SRCS)
-	$(CC) -o $@ $^ $(LIBS)
+# Build the main executable, depends on the build target
+main: build
+	@cp build/main .
 
+# Run the tests, depends on the build target
+test: build
+	@cd build && ctest --verbose
+
+# This target configures and builds the project
+build:
+	@mkdir -p build
+	@cd build && cmake ..
+	@cd build && make
+
+# Clean the build directory and executables
 clean:
-	rm -f $(TARGET)
-
-.PHONY: all clean
+	@rm -rf build main
