@@ -123,7 +123,12 @@ auto make_move(GameSession &session, Point move_point, Stone stone_color) -> int
 
     if (!has_liberties &&
         !check_liberties(session, move_point, move_point, stone_color)) {
+        auto &captures = board.captured_groups();
+        const auto previous_capture_count = captures.size();
         remove_block(session, move_point, stone_color);
+        while (captures.size() > previous_capture_count) {
+            captures.pop_back();
+        }
         return 0;
     }
 

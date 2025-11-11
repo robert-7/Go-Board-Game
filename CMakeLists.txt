@@ -39,7 +39,12 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 # Test executable
-add_executable(go_tests tests/test_placeholder.cpp)
+add_executable(go_tests
+  tests/test_placeholder.cpp
+  tests/rules_tests.cpp
+  src/game/Board.cpp
+  src/game/Rules.cpp
+)
 target_link_libraries(go_tests PRIVATE GTest::gtest_main)
 
 include(GoogleTest)
