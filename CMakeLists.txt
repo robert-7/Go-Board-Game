@@ -8,7 +8,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Generate compile_commands.json for tooli
 
 include_directories(src)
 
-set(SOURCE_FILES main.cpp src/game/GameSession.cpp) # Add main.cpp file of project root directory as source file
+set(SOURCE_FILES
+  main.cpp
+  src/game/GameSession.cpp
+  src/input/InputRouter.cpp
+) # Add main.cpp file of project root directory as source file
 add_executable(main ${SOURCE_FILES}) # Add executable target with source files listed in SOURCE_FILES variable
 
 find_package(OpenGL REQUIRED)

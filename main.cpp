@@ -19,10 +19,9 @@
 
 // Project includes
 #include "game/GameSession.h"
+#include "input/InputRouter.h"
 
 constexpr GLenum GL_CLAMP_TO_EDGE_VALUE = 0x812F;
-const float ZOOM_SCALE = 0.01F;
-
 #if defined(__cpp_lib_math_constants)
 constexpr float PI = std::numbers::pi_v<float>; // Pi constant for trigonometric helpers
 #else
@@ -35,12 +34,6 @@ constexpr float PI = 3.14159265358979323846F; // NOLINT(modernize-use-std-number
 // declaration, forward
 void display();
 void display(GameSession &session);
-void keyboard(unsigned char, int, int);
-void keyboard(GameSession &session, unsigned char, int, int);
-void mouse(int button, int state, int x, int y);
-void mouse(GameSession &session, int button, int state, int x, int y);
-void motion(int x, int y);
-void motion(GameSession &session, int x, int y);
 void init(GameSession &session);
 void idle();
 void idle(GameSession &session);
@@ -91,247 +84,12 @@ auto main(int argc, char **argv) -> int {
     init(session);
 
     // register rendering mainloop
-    glutKeyboardFunc(keyboard);
+    input::register_callbacks();
     glutDisplayFunc(display);
     glutIdleFunc(idle);
-
-    glutMouseFunc(mouse);   // Call mouse whenever mouse button pressed
-    glutMotionFunc(motion); // Call motion whenever mouse moves while button
-                            // pressed let's rock ...
     glutMainLoop();
 
     return 0;
-}
-
-void keyboard(unsigned char key, [[maybe_unused]] int x, [[maybe_unused]] int y) {
-    auto &session = current_session();
-    keyboard(session, key, x, y);
-}
-
-void keyboard(GameSession &session, unsigned char key, [[maybe_unused]] int x,
-              [[maybe_unused]] int y) {
-    /*
-
-    1 : Toggle specularity
-    2 : Toggle lighting
-    3 : Toggle wireframe
-    4 : Toggle light animation
-    5 : Toggle depth testing
-    6 : Toggle culling (try disabling both depth testing and culling)
-    7 : Toggle between smooth and flat shading
-    8 : Toggle texture
-
-    o,O : Toggle board rotation along the y-axis
-    p,P : Toggle board rotation along the x-axis
-    r,R : Activate "reset board option"
-    y,Y : Confirm  "reset board option"
-    n,N : Cancel   "reset board option"
-    v,V : Set color to white (This makes testing a bit faster)
-    b,B : Set color to black (This makes testing a bit faster)
-
-    wasd  : Move a piece around the board
-    enter : Place a piece on the board
-
-    ON RIGHT CLICK AND HOLD MOUSE:
-    slide left  : move camera left
-    slide right : move camera right
-    slide up    : zoom camera in
-    slide down  : zoom camera out
-    */
-
-    switch (key) {
-    case '1':
-        // Enable/disable wireframe mode
-        session.wireframe = !session.wireframe;
-
-        if (session.wireframe) {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        } else {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        }
-
-        break;
-
-    case '3':
-        session.material = !session.material;
-
-        break;
-
-    case '5':
-        session.depth_test = !session.depth_test;
-
-        if (session.depth_test) {
-            glEnable(GL_CULL_FACE);
-            glEnable(GL_DEPTH_TEST);
-        } else {
-            glDisable(GL_DEPTH_TEST);
-        }
-
-        break;
-
-    case '6':
-        session.cull_face = !session.cull_face;
-
-        if (session.cull_face) {
-            glEnable(GL_CULL_FACE);
-        } else {
-            glDisable(GL_CULL_FACE);
-        }
-
-        break;
-
-    case '7':
-        session.smooth_shading = !session.smooth_shading;
-
-        if (session.smooth_shading) {
-            glShadeModel(GL_SMOOTH);
-        } else {
-            glShadeModel(GL_FLAT);
-        }
-
-        break;
-
-    case '8':
-        session.enable_texture = !session.enable_texture;
-
-        if (session.enable_texture) {
-            glEnable(GL_TEXTURE_2D);
-        } else {
-            glDisable(GL_TEXTURE_2D);
-        }
-        break;
-
-    case 'o':
-    case 'O':
-        std::cout << "PRESSED O\n";
-        session.pause_board_rotation_y = !session.pause_board_rotation_y;
-
-        break;
-
-    case 'p':
-    case 'P':
-        std::cout << "PRESSED P\n";
-        session.pause_board_rotation_x = !session.pause_board_rotation_x;
-
-        break;
-
-    case 'a':
-    case 'A':
-        if (session.place_x > -BOARD_CENTER) {
-            session.place_x -= 1;
-        }
-
-        break;
-
-    case 'w':
-    case 'W':
-        if (session.place_y < BOARD_CENTER) {
-            session.place_y += 1;
-        }
-
-        break;
-    case 's':
-    case 'S':
-        if (session.place_y > -BOARD_CENTER) {
-            session.place_y -= 1;
-        }
-
-        break;
-    case 'd':
-    case 'D':
-        if (session.place_x < BOARD_CENTER) {
-            session.place_x += 1;
-        }
-
-        break;
-
-    case '\r':
-        if (session.board_status[session.place_x + BOARD_CENTER]
-                                [session.place_y + BOARD_CENTER] != 0) {
-            std::cout << "YOU CAN'T PLACE A PIECE HERE BECAUSE THERE ALREADY IS A "
-                         "PIECE HERE!!!\n";
-        } else {
-            std::cout << "ENTER KEY PRESSED!!!\n";
-            make_move(session, session.place_x + BOARD_CENTER,
-                      session.place_y + BOARD_CENTER, session.stone_color);
-            if (session.stone_color == 1) {
-                session.stone_color = 2;
-            } else {
-                session.stone_color = 1;
-            }
-        }
-        break;
-    case 'r':
-    case 'R':
-        std::cout << "You pressed 'r', the restart button. Press 'y' to confirm "
-                     "restart. Press 'n' to cancel.\n";
-        session.restart_option = 1;
-        break;
-    case 'n':
-    case 'N':
-        if (session.restart_option) {
-            std::cout << "You pressed 'n'. Restart option cancelled.\n";
-            session.restart_option = 0;
-        }
-        break;
-    case 'y':
-    case 'Y':
-        if (session.restart_option) {
-            std::cout << "You pressed 'y'. The game has been restarted.\n";
-            init_board(session);
-            session.stone_color = 1;
-        }
-        break;
-
-    case 'b':
-    case 'B':
-        session.stone_color = 2;
-        break;
-    case 'v':
-    case 'V':
-        session.stone_color = 1;
-        break;
-    }
-}
-
-// Handles mouse motion events while a button is pressed
-void motion(int x, int y) {
-    auto &session = current_session();
-    motion(session, x, y);
-}
-
-void motion(GameSession &session, int x, int y) {
-    // If the RMB is pressed and dragged then zoom in / out
-    if (session.update_cam_z_pos) {
-        // Update camera position while the mouse is dragged
-        session.camera.z += (y - session.last_y) * ZOOM_SCALE;
-        session.camera.x += (x - session.last_x) * ZOOM_SCALE;
-        session.last_x = x;
-        session.last_y = y;
-
-        // Redraw the scene from updated camera position
-        glutSetWindow(session.window_id);
-        glutPostRedisplay();
-    }
-}
-
-// Handles mouse button pressed / released events
-void mouse(int button, int state, int x, int y) {
-    auto &session = current_session();
-    mouse(session, button, state, x, y);
-}
-
-void mouse(GameSession &session, int button, int state, int x, int y) {
-    // If the RMB is pressed and dragged then zoom in / out
-    if (button == GLUT_RIGHT_BUTTON) {
-        if (state == GLUT_DOWN) {
-            session.last_x = x;
-            session.last_y = y;
-            session.update_cam_z_pos = true;
-        } else {
-            session.update_cam_z_pos = false;
-        }
-    }
 }
 
 void idle() {
