@@ -16,3 +16,21 @@ find_package(GLUT REQUIRED)
 find_package(DevIL REQUIRED)
 
 target_link_libraries(main PUBLIC ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} ${IL_LIBRARIES} ${ILU_LIBRARIES} ${ILUT_LIBRARIES})
+
+# Enable testing
+enable_testing()
+
+# Google Test
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/refs/tags/v1.17.0.zip
+)
+FetchContent_MakeAvailable(googletest)
+
+# Test executable
+add_executable(go_tests tests/test_placeholder.cpp)
+target_link_libraries(go_tests PRIVATE GTest::gtest_main)
+
+include(GoogleTest)
+gtest_discover_tests(go_tests)
