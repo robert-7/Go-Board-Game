@@ -1,8 +1,8 @@
-#include <gtest/gtest.h>
-
 #include "game/Board.h"
 #include "game/GameSession.h"
 #include "game/Rules.h"
+
+#include <gtest/gtest.h>
 
 namespace {
 

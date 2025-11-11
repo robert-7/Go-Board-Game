@@ -1,12 +1,13 @@
 #ifndef GAME_GROUP_ANALYZER_H
 #define GAME_GROUP_ANALYZER_H
 
+#include "game/Board.h"
+
 #include <array>
+#include <iterator>
 #include <optional>
 #include <utility>
 #include <vector>
-
-#include "game/Board.h"
 
 // Liberties are the empty intersections immediately adjacent to any stone in a
 // connected group. A group with no liberties is captured.

@@ -1,13 +1,15 @@
 #include "input/InputRouter.h"
 
-#include <GL/freeglut_std.h>
-#include <GL/gl.h>
-
-#include <iostream>
-
 #include "game/Board.h"
 #include "game/GameSession.h"
+#include "game/GameState.h"
+#include "game/Move.h"
+#include "game/MoveValidator.h"
 #include "game/Rules.h"
+
+#include <GL/freeglut_std.h>
+#include <GL/gl.h>
+#include <iostream>
 
 namespace {
 
@@ -146,19 +148,25 @@ void keyboard(GameSession &session, unsigned char key, [[maybe_unused]] int x,
         const int cursor_y = state.cursor_y();
         const Point cursor_point{cursor_x, cursor_y};
 
-        if (!Board::is_on_board(cursor_point)) {
-            std::cout << "Cursor is out of bounds; cannot place a stone.\n";
-            break;
-        }
+        const auto current_stone = static_cast<Stone>(state.current_player());
+        const Move attempted_move{.point = cursor_point, .stone = current_stone};
 
-        if (!session.board.is_empty(cursor_point)) {
-            std::cout << "YOU CAN'T PLACE A PIECE HERE BECAUSE THERE ALREADY IS A "
-                      << "PIECE HERE!!!\n";
+        if (!MoveValidator::is_legal(session, attempted_move)) {
+            // Reuse existing messages for clarity
+            if (!Board::is_on_board(cursor_point)) {
+                std::cout << "Cursor is out of bounds; cannot place a stone.\n";
+            } else if (!session.board.is_empty(cursor_point)) {
+                std::cout << "YOU CAN'T PLACE A PIECE HERE BECAUSE THERE ALREADY IS A "
+                          << "PIECE HERE!!!\n";
+            } else {
+                std::cout << "Move is illegal (self-capture or other rule)\n";
+            }
         } else {
             std::cout << "ENTER KEY PRESSED!!!\n";
-            const auto current_stone = static_cast<Stone>(state.current_player());
-            rules::make_move(session, cursor_point, current_stone);
-            state.advance_turn();
+            const auto result = rules::make_move(session, cursor_point, current_stone);
+            if (result == 1) {
+                state.advance_turn();
+            }
         }
         break;
     }

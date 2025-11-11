@@ -2,8 +2,8 @@
 #define GAME_BOARD_H
 
 #include <array>
-#include <cassert>
 #include <cstdint>
+#include <iterator>
 #include <list>
 #include <utility>
 #include <vector>

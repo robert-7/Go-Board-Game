@@ -1,12 +1,13 @@
 #include "game/Rules.h"
 
-#include <array>
-#include <utility>
-#include <vector>
-
 #include "game/Board.h"
 #include "game/GameSession.h"
 #include "game/GroupAnalyzer.h"
+
+#include <array>
+#include <optional>
+#include <utility>
+#include <vector>
 
 namespace {
 

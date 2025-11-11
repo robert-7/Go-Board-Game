@@ -1,6 +1,7 @@
 // includes, graphics
 #include <GL/freeglut_std.h>
 #include <GL/gl.h>
+#include <array>
 // DevIL includes
 #define ILUT_USE_OPENGL
 #include <IL/il.h>

@@ -1,10 +1,10 @@
 #include "graphics/Lights.h"
 
-#include <array>
+#include "game/GameSession.h"
+#include "game/GameState.h"
 
 #include <GL/gl.h>
-
-#include "game/GameSession.h"
+#include <array>
 
 namespace graphics::lights {
 

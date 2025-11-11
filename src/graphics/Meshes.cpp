@@ -1,13 +1,12 @@
 #include "graphics/Meshes.h"
 
-#include <array>
-#include <cmath>
-#include <unistd.h>
+#include "game/GameSession.h"
 
 #include <GL/gl.h>
 #include <GL/glu.h>
-
-#include "game/GameSession.h"
+#include <array>
+#include <cmath>
+#include <unistd.h>
 
 namespace graphics::mesh {
 
