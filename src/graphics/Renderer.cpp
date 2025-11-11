@@ -1,18 +1,18 @@
 #include "graphics/Renderer.h"
 
-#include <cmath>
-#include <cstddef>
-#include <numbers>
+#include "game/Board.h"
+#include "game/GameSession.h"
+#include "game/GameState.h"
+#include "graphics/Lights.h"
+#include "graphics/Meshes.h"
 
 #include <GL/freeglut_std.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
-
 #include <IL/il.h>
-
-#include "game/GameSession.h"
-#include "graphics/Lights.h"
-#include "graphics/Meshes.h"
+#include <cmath>
+#include <cstddef>
+#include <numbers>
 
 namespace {
 

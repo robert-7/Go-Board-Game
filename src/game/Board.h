@@ -2,8 +2,8 @@
 #define GAME_BOARD_H
 
 #include <array>
-#include <cassert>
 #include <cstdint>
+#include <iterator>
 #include <list>
 #include <utility>
 #include <vector>
@@ -39,23 +39,17 @@ class Board {
     static constexpr int CENTER = SIZE / 2;
 
     using Grid = std::array<std::array<Stone, SIZE>, SIZE>;
-    using LibertyGrid = std::array<std::array<int, SIZE>, SIZE>;
     using CaptureGroup = std::vector<CapturedStone>;
     using CaptureGroups = std::list<CaptureGroup>;
 
     static auto is_on_board(Point point) -> bool;
 
     void clear();
-    void clear_liberties();
 
     auto stone_at(Point point) const -> Stone;
     void place_stone(Point point, Stone stone);
     void remove_stone(Point point);
     auto is_empty(Point point) const -> bool;
-
-    auto liberty(Point point) const -> int;
-    auto mutable_liberty(Point point) -> int &;
-    void set_liberty(Point point, int value);
 
     auto captured_groups() -> CaptureGroups &;
     auto captured_groups() const -> const CaptureGroups &;
@@ -76,7 +70,6 @@ class Board {
     static auto index_to_point(int x, int y) -> Point;
 
     Grid stones_{};
-    LibertyGrid liberties_{};
     CaptureGroups captured_groups_;
 };
 

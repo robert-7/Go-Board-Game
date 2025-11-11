@@ -12,14 +12,7 @@ void Board::clear() {
     for (auto &column : stones_) {
         column.fill(Stone::Empty);
     }
-    clear_liberties();
     clear_captured_groups();
-}
-
-void Board::clear_liberties() {
-    for (auto &column : liberties_) {
-        column.fill(-1);
-    }
 }
 
 auto Board::stone_at(Point point) const -> Stone {
@@ -39,20 +32,6 @@ void Board::remove_stone(Point point) { place_stone(point, Stone::Empty); }
 auto Board::is_empty(Point point) const -> bool {
     return stone_at(point) == Stone::Empty;
 }
-
-auto Board::liberty(Point point) const -> int {
-    assert(is_on_board(point));
-    const auto [ix, iy] = to_index(point);
-    return liberties_[ix][iy];
-}
-
-auto Board::mutable_liberty(Point point) -> int & {
-    assert(is_on_board(point));
-    const auto [ix, iy] = to_index(point);
-    return liberties_[ix][iy];
-}
-
-void Board::set_liberty(Point point, int value) { mutable_liberty(point) = value; }
 
 auto Board::captured_groups() -> CaptureGroups & { return captured_groups_; }
 

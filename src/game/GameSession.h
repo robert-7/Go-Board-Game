@@ -1,16 +1,13 @@
 #ifndef GAME_SESSION_H
 #define GAME_SESSION_H
 
-#include <array>
-
-#include <GL/gl.h>
-#include <IL/il.h>
-
 #include "game/Board.h"
 #include "game/GameState.h"
 
-struct Point;
-enum class Stone : std::uint8_t;
+#include <GL/gl.h>
+#include <IL/il.h>
+#include <array>
+#include <cstdint>
 
 constexpr int BOARD_SIZE = Board::SIZE;
 constexpr int BOARD_CENTER = Board::CENTER;
