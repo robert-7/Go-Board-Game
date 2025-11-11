@@ -30,7 +30,7 @@ void lighting_func(const GameSession &session) {
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_strength.data());
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_strength.data());
 
-    GLfloat spread = 90.0F - 90.0F * session.animation_time;
+    GLfloat spread = 90.0F - 90.0F * session.state.animation_time();
     glLightfv(GL_LIGHT0, GL_SPOT_CUTOFF, &spread);
 
     glEnable(GL_LIGHT0);
@@ -240,7 +240,7 @@ void set_images(GameSession &session) {
 }
 
 void jump_off(GameSession &session, int x0, int z0, int color) {
-    const float animation = session.animation_time;
+    const float animation = session.state.animation_time();
     const bool early_animation = animation < 0.1F;
 
     int x1 = -4;
@@ -333,8 +333,10 @@ void display(GameSession &session) {
     glTranslatef(0.0F, 1.0F, 0.0F);
 
     glPushMatrix();
-    apply_transformations(static_cast<float>(session.place_x),
-                          static_cast<float>(session.place_y), 0.0F);
+    const int cursor_x = session.state.cursor_x();
+    const int cursor_y = session.state.cursor_y();
+    apply_transformations(static_cast<float>(cursor_x), static_cast<float>(cursor_y),
+                          0.0F);
     draw_sphere(0);
     glPopMatrix();
 
@@ -356,11 +358,11 @@ void display(GameSession &session) {
         for (const auto &piece : captured) {
             jump_off(session, piece[0], piece[1], piece[2]);
         }
-        session.animation_time +=
-            (TIME_INCREMENT * static_cast<float>(captured.size()));
+        session.state.advance_animation(TIME_INCREMENT *
+                                        static_cast<float>(captured.size()));
     }
-    if (session.animation_time > 1.0F) {
-        session.animation_time = 0.0F;
+    if (session.state.animation_time() > 1.0F) {
+        session.state.reset_animation();
         session.board.clear_captured_groups();
     }
 

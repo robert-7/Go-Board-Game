@@ -34,6 +34,7 @@ void motion_callback(int x, int y) {
 
 void keyboard(GameSession &session, unsigned char key, [[maybe_unused]] int x,
               [[maybe_unused]] int y) {
+    auto &state = session.state;
     switch (key) {
     case '1':
         session.wireframe = !session.wireframe;
@@ -111,49 +112,46 @@ void keyboard(GameSession &session, unsigned char key, [[maybe_unused]] int x,
 
     case 'a':
     case 'A':
-        if (session.place_x > -BOARD_CENTER) {
-            session.place_x -= 1;
+        if (state.cursor_x() > -BOARD_CENTER) {
+            state.move_cursor(-1, 0);
         }
 
         break;
 
     case 'w':
     case 'W':
-        if (session.place_y < BOARD_CENTER) {
-            session.place_y += 1;
+        if (state.cursor_y() < BOARD_CENTER) {
+            state.move_cursor(0, 1);
         }
 
         break;
     case 's':
     case 'S':
-        if (session.place_y > -BOARD_CENTER) {
-            session.place_y -= 1;
+        if (state.cursor_y() > -BOARD_CENTER) {
+            state.move_cursor(0, -1);
         }
 
         break;
     case 'd':
     case 'D':
-        if (session.place_x < BOARD_CENTER) {
-            session.place_x += 1;
+        if (state.cursor_x() < BOARD_CENTER) {
+            state.move_cursor(1, 0);
         }
 
         break;
 
     case '\r': {
         const auto &stones = session.board.stones();
-        if (stones[session.place_x + BOARD_CENTER][session.place_y + BOARD_CENTER] !=
-            0) {
+        const int cursor_x = state.cursor_x();
+        const int cursor_y = state.cursor_y();
+        if (stones[cursor_x + BOARD_CENTER][cursor_y + BOARD_CENTER] != 0) {
             std::cout << "YOU CAN'T PLACE A PIECE HERE BECAUSE THERE ALREADY IS A "
                       << "PIECE HERE!!!\n";
         } else {
             std::cout << "ENTER KEY PRESSED!!!\n";
-            rules::make_move(session, session.place_x + BOARD_CENTER,
-                             session.place_y + BOARD_CENTER, session.stone_color);
-            if (session.stone_color == 1) {
-                session.stone_color = 2;
-            } else {
-                session.stone_color = 1;
-            }
+            rules::make_move(session, cursor_x + BOARD_CENTER, cursor_y + BOARD_CENTER,
+                             state.current_player());
+            state.advance_turn();
         }
         break;
     }
@@ -161,31 +159,33 @@ void keyboard(GameSession &session, unsigned char key, [[maybe_unused]] int x,
     case 'R':
         std::cout << "You pressed 'r', the restart button. Press 'y' to confirm "
                      "restart. Press 'n' to cancel.\n";
-        session.restart_option = 1;
+        state.request_restart();
         break;
     case 'n':
     case 'N':
-        if (session.restart_option) {
+        if (state.restart_pending()) {
             std::cout << "You pressed 'n'. Restart option cancelled.\n";
-            session.restart_option = 0;
+            state.cancel_restart();
         }
         break;
     case 'y':
     case 'Y':
-        if (session.restart_option) {
+        if (state.restart_pending()) {
             std::cout << "You pressed 'y'. The game has been restarted.\n";
             rules::init_board(session);
-            session.stone_color = 1;
+            state.cancel_restart();
+            state.set_current_player(1);
+            state.reset_animation();
         }
         break;
 
     case 'b':
     case 'B':
-        session.stone_color = 2;
+        state.set_current_player(2);
         break;
     case 'v':
     case 'V':
-        session.stone_color = 1;
+        state.set_current_player(1);
         break;
     }
 }

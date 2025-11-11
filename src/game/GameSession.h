@@ -7,6 +7,7 @@
 #include <IL/il.h>
 
 #include "game/Board.h"
+#include "game/GameState.h"
 
 constexpr int BOARD_SIZE = Board::SIZE;
 constexpr int BOARD_CENTER = Board::CENTER;
@@ -55,12 +56,7 @@ class GameSession {
 
     Camera camera{.x = INITIAL_CAM_X, .y = INITIAL_CAM_Y, .z = INITIAL_CAM_Z};
 
-    int place_x = 0;
-    int place_y = 0;
-    int stone_color = 1;
-    float animation_time = 0.0F;
-
-    int restart_option = 0;
+    GameState state;
     Board board;
 };
 
