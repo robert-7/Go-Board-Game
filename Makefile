@@ -24,4 +24,3 @@ build:
 # Clean the build directory and executables
 clean:
 	@rm -rf build main
-
