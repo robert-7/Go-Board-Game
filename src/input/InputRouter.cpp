@@ -139,9 +139,10 @@ void keyboard(GameSession &session, unsigned char key, [[maybe_unused]] int x,
 
         break;
 
-    case '\r':
-        if (session.board_status[session.place_x + BOARD_CENTER]
-                                [session.place_y + BOARD_CENTER] != 0) {
+    case '\r': {
+        const auto &stones = session.board.stones();
+        if (stones[session.place_x + BOARD_CENTER][session.place_y + BOARD_CENTER] !=
+            0) {
             std::cout << "YOU CAN'T PLACE A PIECE HERE BECAUSE THERE ALREADY IS A "
                       << "PIECE HERE!!!\n";
         } else {
@@ -155,6 +156,7 @@ void keyboard(GameSession &session, unsigned char key, [[maybe_unused]] int x,
             }
         }
         break;
+    }
     case 'r':
     case 'R':
         std::cout << "You pressed 'r', the restart button. Press 'y' to confirm "

@@ -3,40 +3,25 @@
 #include <array>
 #include <iostream>
 #include <utility>
-#include <vector>
 
 #include "game/GameSession.h"
 
 namespace {
 
-void init_board_state(GameSession &session) {
-    for (auto &column : session.board_status) {
-        column.fill(0);
-    }
-}
-
-void clear_liberties(GameSession &session) {
-    for (auto &column : session.liberties_status) {
-        column.fill(-1);
-    }
-}
-
 void remove_block(GameSession &session, int x, int y, int piece) {
     if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) {
         return;
     }
-    if (session.board_status[x][y] != piece) {
+    auto &stones = session.board.stones();
+    if (stones[x][y] != piece) {
         return;
     }
 
-    session.board_status[x][y] = 0;
+    stones[x][y] = 0;
     std::cout << "Jump from " << x << y << '\n';
 
-    std::vector<int> rm_piece;
-    rm_piece.push_back(x);
-    rm_piece.push_back(y);
-    rm_piece.push_back(piece);
-    session.captured_groups.push_back(rm_piece);
+    Board::CaptureGroup rm_piece{x, y, piece};
+    session.board.add_captured_group(std::move(rm_piece));
 
     remove_block(session, x - 1, y, piece);
     remove_block(session, x + 1, y, piece);
@@ -49,14 +34,16 @@ auto check_liberties(GameSession &session, int x, int y, int originx, int origin
     if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) {
         return 0;
     }
-    if (session.board_status[x][y] == 0) {
+    auto &stones = session.board.stones();
+    if (stones[x][y] == 0) {
         return 1;
     }
-    if (session.board_status[x][y] != piece) {
+    if (stones[x][y] != piece) {
         return 0;
     }
-    if (session.liberties_status[x][y] != -1) {
-        return session.liberties_status[x][y];
+    auto &liberties = session.board.liberties();
+    if (liberties[x][y] != -1) {
+        return liberties[x][y];
     }
 
     const int direcx = x - originx;
@@ -65,22 +52,25 @@ auto check_liberties(GameSession &session, int x, int y, int originx, int origin
         (direcx <= 0 && check_liberties(session, x - 1, y, originx, originy, piece)) ||
         (direcy >= 0 && check_liberties(session, x, y + 1, originx, originy, piece)) ||
         (direcy <= 0 && check_liberties(session, x, y - 1, originx, originy, piece))) {
-        session.liberties_status[x][y] = 1;
+        liberties[x][y] = 1;
     } else {
-        session.liberties_status[x][y] = 0;
+        liberties[x][y] = 0;
     }
-    return session.liberties_status[x][y];
+    return liberties[x][y];
 }
 
 } // namespace
 
 namespace rules {
 
-void init_board(GameSession &session) { init_board_state(session); }
+void init_board(GameSession &session) { session.board.clear(); }
 
 auto make_move(GameSession &session, int x, int y, int piece) -> int {
-    session.board_status[x][y] = piece;
-    clear_liberties(session);
+    auto &board = session.board;
+    auto &stones = board.stones();
+
+    stones[x][y] = piece;
+    board.clear_liberties();
 
     const int other = piece == 1 ? 2 : 1;
     int has_liberties = 0;
@@ -97,7 +87,7 @@ auto make_move(GameSession &session, int x, int y, int piece) -> int {
             continue;
         }
 
-        if (session.board_status[nx][ny] == piece) {
+        if (stones[nx][ny] == piece) {
             continue;
         }
 

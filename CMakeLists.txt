@@ -11,6 +11,7 @@ include_directories(src)
 set(SOURCE_FILES
   main.cpp
   src/game/GameSession.cpp
+  src/game/Board.cpp
   src/game/Rules.cpp
   src/graphics/Renderer.cpp
   src/input/InputRouter.cpp

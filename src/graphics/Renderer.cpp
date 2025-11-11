@@ -338,28 +338,30 @@ void display(GameSession &session) {
     draw_sphere(0);
     glPopMatrix();
 
+    const auto &stones = session.board.stones();
     for (int i = 0; i < BOARD_SIZE; i++) {
         for (int j = 0; j < BOARD_SIZE; j++) {
-            if (session.board_status[i][j] != 0) {
+            if (stones[i][j] != 0) {
                 glPushMatrix();
                 apply_transformations(static_cast<float>(i - BOARD_CENTER),
                                       static_cast<float>(j - BOARD_CENTER), 0.0F);
-                draw_sphere(session.board_status[i][j]);
+                draw_sphere(stones[i][j]);
                 glPopMatrix();
             }
         }
     }
 
-    if (!session.captured_groups.empty()) {
-        for (const auto &piece : session.captured_groups) {
+    const auto &captured = session.board.captured_groups();
+    if (!captured.empty()) {
+        for (const auto &piece : captured) {
             jump_off(session, piece[0], piece[1], piece[2]);
         }
         session.animation_time +=
-            (TIME_INCREMENT * static_cast<float>(session.captured_groups.size()));
+            (TIME_INCREMENT * static_cast<float>(captured.size()));
     }
     if (session.animation_time > 1.0F) {
         session.animation_time = 0.0F;
-        session.captured_groups.clear();
+        session.board.clear_captured_groups();
     }
 
     glPopMatrix();

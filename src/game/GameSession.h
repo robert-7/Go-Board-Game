@@ -2,14 +2,14 @@
 #define GAME_SESSION_H
 
 #include <array>
-#include <list>
-#include <vector>
 
 #include <GL/gl.h>
 #include <IL/il.h>
 
-constexpr int BOARD_SIZE = 19;
-constexpr int BOARD_CENTER = BOARD_SIZE / 2;
+#include "game/Board.h"
+
+constexpr int BOARD_SIZE = Board::SIZE;
+constexpr int BOARD_CENTER = Board::CENTER;
 
 // Camera initial position
 constexpr GLdouble INITIAL_CAM_X = 0.0;
@@ -60,10 +60,8 @@ class GameSession {
     int stone_color = 1;
     float animation_time = 0.0F;
 
-    std::array<std::array<int, BOARD_SIZE>, BOARD_SIZE> board_status{};
-    std::array<std::array<int, BOARD_SIZE>, BOARD_SIZE> liberties_status{};
     int restart_option = 0;
-    std::list<std::vector<int>> captured_groups;
+    Board board;
 };
 
 auto current_session() -> GameSession &;
