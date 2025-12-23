@@ -3,19 +3,17 @@ FROM ubuntu:24.04
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install build dependencies and game libraries
-# Matches dependencies in scripts/install_dependencies.sh
+# Install base build tools
 RUN apt-get update && apt-get install -y \
     build-essential \
-    cmake \
-    mesa-common-dev \
-    libglu1-mesa-dev \
-    libgl1-mesa-dev \
-    freeglut3-dev \
-    libglew-dev \
-    libdevil-dev \
-    git \
     && rm -rf /var/lib/apt/lists/*
+
+# Copy dependency script
+COPY scripts/install_dependencies.sh /tmp/install_dependencies.sh
+
+# Run dependency script
+RUN /tmp/install_dependencies.sh && \
+    rm -rf /var/lib/apt/lists/* /tmp/install_dependencies.sh
 
 # Set working directory
 WORKDIR /app
