@@ -1,0 +1,12 @@
+services:
+  go-game:
+    build: .
+    container_name: go-board-game
+    # Pass the DISPLAY environment variable to the container
+    environment:
+      - DISPLAY=${DISPLAY}
+    # Mount the X11 socket to allow the container to communicate with the X server
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    # Use host networking to simplify X11 communication
+    network_mode: host

@@ -25,3 +25,5 @@ repos:
         entry: scripts/run_lint.sh
         language: script
         pass_filenames: false
+        # Only run when C++ source, headers, CMake config, or lint config changes
+        files: \.(cpp|h|hpp|c|cc|cxx)$|CMakeLists\.txt$|\.clang-format$
