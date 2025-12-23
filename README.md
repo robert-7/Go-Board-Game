@@ -30,10 +30,24 @@ With the above done, you should be ready to set up the needed environment.
 git clone https://github.com/robert-7/Go-Board-Game.git && cd Go-Board-Game
 ```
 
-## Building and Running
+## Building and Running Locally
 
 To build and run the binary, simply run `make && ./main`.
 To clean up, run `make clean`.
+
+## Building and Running with Docker
+
+You can also run the game in a Docker container without installing dependencies on your host machine.
+
+### Prerequisites
+
+- Docker
+- Docker Compose
+
+### Instructions
+
+1. **Allow X11 connections** (Linux): Since the game runs in a container but displays on your host screen, you need to allow the container to connect to your X server. Do so with: `xhost +local:docker```
+1. **Build and Run**: Do so with `docker compose up --build`. The game window should appear on your screen.
 
 ## Linting
 
