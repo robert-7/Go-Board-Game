@@ -11,12 +11,12 @@ run_with_sudo() {
 
 run_with_sudo apt-get update
 run_with_sudo apt-get install -y \
+  build-essential \
   mesa-common-dev \
   libglu1-mesa-dev \
   libgl1-mesa-dev \
   freeglut3-dev \
   libglew-dev \
-  libdevil1c2 \
   libdevil-dev \
   cmake \
   clang-tidy \

@@ -1,12 +1,7 @@
-FROM ubuntu:24.04
+FROM ubuntu:25.10
 
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
-
-# Install base build tools
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
 
 # Copy dependency script
 COPY scripts/install_dependencies.sh /tmp/install_dependencies.sh
